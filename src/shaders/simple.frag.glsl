@@ -27,21 +27,34 @@ void main(void) {
 	vec3 color = (ambient + diffuse + specular) * vColor.rgb;
 
 
-	vec3 shadowPos = (vPositionInLight.xyz / vPositionInLight.w) * 0.5 + 0.5;
-	vec4 shadowColor = texture2D(uShadow, vec2(shadowPos.x, shadowPos.y));
-
-	float nearestToLight = shadowColor.r;
-	float distanceFromLight = shadowPos.z;
-
 	if (uFillColor.a > 0.0) {
-		gl_FragColor = uFillColor;
-		if (distanceFromLight < nearestToLight + 0.00001) {
-			// In light
-			gl_FragColor = vec4(uFillColor.rgb, vColor.a);
-		} else {
-			// In shadow
-			gl_FragColor = vec4(uFillColor.rgb * 0.2, vColor.a);
+		float shade = 0.0;
+
+		float edge = 1.0/1024.0;
+		vec3 shadowPos = (vPositionInLight.xyz / vPositionInLight.w) * 0.5 + 0.5;
+
+		float shadows[9];
+
+		shadows[0] = texture2D(uShadow, vec2(shadowPos.x, shadowPos.y)).r;
+		shadows[1] = texture2D(uShadow, vec2(shadowPos.x - edge, shadowPos.y)).r;
+		shadows[2] = texture2D(uShadow, vec2(shadowPos.x + edge, shadowPos.y)).r;
+		shadows[3] = texture2D(uShadow, vec2(shadowPos.x, shadowPos.y - edge)).r;
+		shadows[4] = texture2D(uShadow, vec2(shadowPos.x, shadowPos.y + edge)).r;
+		shadows[5] = texture2D(uShadow, vec2(shadowPos.x - edge, shadowPos.y - edge)).r;
+		shadows[6] = texture2D(uShadow, vec2(shadowPos.x + edge, shadowPos.y - edge)).r;
+		shadows[7] = texture2D(uShadow, vec2(shadowPos.x - edge, shadowPos.y + edge)).r;
+		shadows[8] = texture2D(uShadow, vec2(shadowPos.x + edge, shadowPos.y + edge)).r;
+
+		float distanceFromLight = shadowPos.z;
+
+		float bias = 0.0001;
+		for (int i = 0; i < 9; i++) {
+			if (distanceFromLight > shadows[i] + bias) {
+				shade += 0.08;
+			}
 		}
+		vec3 shadowColor = vec3(0.0);
+		gl_FragColor = vec4(mix(uFillColor.rgb, shadowColor, shade), vColor.a);
 	} else {
 		gl_FragColor = vec4(color, vColor.a);
 	}
