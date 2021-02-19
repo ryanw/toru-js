@@ -1,15 +1,22 @@
 precision mediump float;
 
-uniform float uTime;
+struct Material {
+	bool castsShadows;
+	bool receivesShadows;
+	bool hasTexture;
+	vec4 color;
+	sampler2D texture;
+};
+
 uniform vec4 uFillColor;
 uniform sampler2D uShadowMap;
 uniform vec3 uLightDir;
+uniform Material uMaterial;
 
-varying vec4 vColor;
 varying vec3 vNormal;
 varying vec3 vPosition;
-varying vec4 vPositionInLight;
 varying vec2 vTexCoord;
+varying vec4 vPositionInLight;
 
 void main(void) {
 	vec3 lightColor = vec3(1.0);
@@ -21,15 +28,20 @@ void main(void) {
 
 	vec3 viewDir = normalize(-vPosition);
 	vec3 reflectDir = reflect(-uLightDir, vNormal);
-	float spec = pow(max(dot(viewDir, reflectDir), 0.0), 128.0);
+	float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
 	vec3 specular = 0.5 * spec * lightColor;
 
-	vec3 color = (ambient + diffuse + specular) * vColor.rgb;
 
+	vec4 texColor;
+	if (uMaterial.hasTexture) {
+		texColor = texture2D(uMaterial.texture, vTexCoord);
+	} else {
+		texColor = uMaterial.color;
+	}
 
-	if (uFillColor.a > 0.0) {
-		float shade = 0.0;
+	float shade = 0.0;
 
+	if (uMaterial.receivesShadows) {
 		float edge = 1.0/1024.0;
 		vec3 shadowPos = (vPositionInLight.xyz / vPositionInLight.w) * 0.5 + 0.5;
 
@@ -47,15 +59,16 @@ void main(void) {
 
 		float distanceFromLight = shadowPos.z;
 
-		float bias = 0.0001;
+		float bias = 0.00001;
 		for (int i = 0; i < 9; i++) {
 			if (distanceFromLight > shadows[i] + bias) {
 				shade += 0.08;
 			}
 		}
-		vec3 shadowColor = vec3(0.0);
-		gl_FragColor = vec4(mix(uFillColor.rgb, shadowColor, shade), vColor.a);
-	} else {
-		gl_FragColor = vec4(color, vColor.a);
 	}
+	vec3 shadowColor = vec3(0.0);
+
+	vec3 color = mix(texColor.rgb, shadowColor, shade);
+	color = (ambient + diffuse + specular) * color;
+	gl_FragColor = vec4(color, texColor.a);
 }

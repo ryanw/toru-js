@@ -4,13 +4,20 @@ import { Renderer } from './renderer';
 import { Color } from './material';
 import { StaticMesh } from './components/static_mesh';
 import { UniformValues } from './shader';
+import { RenderTexture, Attachment } from './render_texture';
+import { Light } from './light';
+import { normalize } from './geom';
 
 export class Scene {
 	actors: Actor[] = [];
 	textures: Map<number, Texture> = new Map();
 	renderer: Renderer;
 	backgroundColor: Color = [0.0, 0.0, 0.0, 1.0];
-	uniforms?: UniformValues = {};
+	shadowMap: RenderTexture;
+	light: Light;
+	uniforms?: UniformValues = {
+		uShadowMap: null,
+	};
 
 	constructor(renderer: Renderer) {
 		this.renderer = renderer;
@@ -30,6 +37,10 @@ export class Scene {
 		}
 
 		this.uploadActorInstances(actor);
+
+		if (actor.material?.texture) {
+			this.addTexture(actor.material.texture);
+		}
 
 		this.actors.push(actor);
 		return this.actors.length - 1;
@@ -95,6 +106,57 @@ export class Scene {
 	}
 
 	async draw(): Promise<number> {
+		this.updateShadowMap();
 		return await this.renderer.drawScene(this);
+	}
+
+	protected createShadowMap() {
+		const gl = (this.renderer as any).gl as WebGLRenderingContext;
+
+		const ext = gl.getExtension('WEBGL_depth_texture');
+		if (!ext) {
+			throw `WEBGL_depth_texture extension is not supported`;
+		}
+
+		this.shadowMap = new RenderTexture(1024, Attachment.DEPTH);
+	}
+
+	protected updateShadowMap() {
+		if (!this.light) return;
+		if (!this.shadowMap) this.createShadowMap();
+
+		const hiddenActors = [];
+		for (const actor of this.actors) {
+			if (actor.visible && actor.material && !actor.material.castsShadows) {
+				actor.visible = false;
+				hiddenActors.push(actor);
+			}
+		}
+		this.disableShadows();
+		const oldCamera = this.renderer.camera;
+		this.renderer.camera = this.light;
+		this.renderer.drawScene(this, this.shadowMap);
+		this.renderer.camera = oldCamera;
+		this.enableShadows();
+		for (const actor of hiddenActors) {
+			actor.visible = true;
+		}
+
+		const proj = this.light.projection.clone();
+		const view = this.light.view.inverse();
+		const viewProj = proj.multiply(view);
+		const lightDir = normalize(this.light.view.transformPoint3([0.0, 0.0, -1.0]));
+
+		this.uniforms.uLightDir = lightDir;
+		this.uniforms.uLight = viewProj;
+	}
+
+	private enableShadows() {
+		this.uniforms.uShadowMap = this.bindTexture(this.shadowMap);
+	}
+
+	private disableShadows() {
+		this.unbindTexture(this.shadowMap);
+		this.uniforms.uShadowMap = null;
 	}
 }

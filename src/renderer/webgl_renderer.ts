@@ -173,6 +173,7 @@ export class WebGLRenderer extends Renderer {
 	}
 
 	drawActor(actor: Actor, projection?: Matrix4, parentModel?: Matrix4) {
+		if (!actor.visible) return;
 		const { model, material, children } = actor;
 		const actorModel = parentModel ? parentModel.multiply(model) : model;
 
@@ -364,6 +365,18 @@ export class WebGLRenderer extends Renderer {
 		const viewProj = proj.multiply(view);
 
 		for (const actor of scene.actors) {
+
+			if (actor.material) {
+				const mat = actor.material;
+				actor.uniforms['uMaterial.color'] = mat.color;
+				actor.uniforms['uMaterial.hasTexture'] = !!mat.texture;
+				actor.uniforms['uMaterial.castsShadows'] = mat.castsShadows;
+				actor.uniforms['uMaterial.receivesShadows'] = mat.receivesShadows;
+				if (mat.texture) {
+					actor.uniforms['uMaterial.texture'] = this.bindTexture(mat.texture);
+				}
+			}
+
 			this.drawActor(actor, viewProj);
 
 			// Apply the Scene's uniforms to the current shader

@@ -3,13 +3,24 @@ export enum ScaleFilter {
 	NEAREST,
 }
 
+export interface TextureOptions {
+	minFilter?: ScaleFilter;
+	magFilter?: ScaleFilter;
+}
+
 export class Texture {
 	pixels: ImageData | HTMLImageElement;
 	minFilter = ScaleFilter.LINEAR;
 	magFilter = ScaleFilter.LINEAR;
 
-	constructor(imageOrURL?: HTMLImageElement | ImageData | string) {
+	constructor(imageOrURL?: HTMLImageElement | ImageData | string, options?: TextureOptions) {
 		this.putPixels(new ImageData(new Uint8ClampedArray([255, 0, 255, 255]), 1, 1));
+		if (options?.minFilter) {
+			this.minFilter = options.minFilter
+		}
+		if (options?.magFilter) {
+			this.magFilter = options.magFilter
+		}
 
 		if (imageOrURL) {
 			if (typeof imageOrURL === 'string') {
@@ -24,12 +35,12 @@ export class Texture {
 		}
 	}
 
-	static async fromUrl(url: string): Promise<Texture> {
+	static async fromUrl(url: string, options?: TextureOptions): Promise<Texture> {
 		return new Promise((resolve, reject) => {
 			const image = new Image();
 			image.src = url;
 			image.addEventListener('load', () => {
-				resolve(new Texture(image));
+				resolve(new Texture(image, options));
 			});
 			image.addEventListener('error', (e) => {
 				reject(e);

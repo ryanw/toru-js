@@ -23,9 +23,10 @@ export interface ActorOptions {
 }
 
 export class Actor<I extends Instance = Instance> {
+	visible: boolean = true;
 	components: Component[] = [];
 	model: Matrix4 = Matrix4.identity();
-	material: Material = new Material();
+	material: Material;
 	shader?: Shader;
 	uniforms: UniformValues = {};
 	children: Actor[] = [];

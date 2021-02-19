@@ -248,14 +248,22 @@ export class WebGLShader {
 		}
 	}
 
-	setUniform(name: string, value: number | number[] | Matrix4) {
+	setUniform(name: string, value: boolean | number | number[] | Matrix4) {
+		if (value == null) return;
 		const gl = this.gl;
 
 		const uniform = this.uniforms[name];
 		if (!uniform) {
-			throw `Unable to find '${name}' uniform in shader`;
+			return;
 		}
 		switch (uniform.type) {
+			case WebGLRenderingContext.BOOL:
+				if (typeof value !== 'boolean') {
+					throw `Uniform '${name}' expected boolean but got: ${typeof value}`;
+				}
+				gl.uniform1i(uniform.location, value ? 1 : 0);
+				break;
+
 			case WebGLRenderingContext.FLOAT:
 				if (typeof value !== 'number') {
 					throw `Uniform '${name}' expected number but got: ${typeof value}`;
@@ -293,6 +301,20 @@ export class WebGLShader {
 					throw `Uniform '${name}' expected an array of 3 numbers but got something else`;
 				}
 				gl.uniform3fv(uniform.location, value);
+				break;
+
+			case WebGLRenderingContext.FLOAT_VEC4:
+				if (
+					!Array.isArray(value) ||
+					value.length !== 4 ||
+					typeof value[0] !== 'number' ||
+					typeof value[1] !== 'number' ||
+					typeof value[2] !== 'number' ||
+					typeof value[3] !== 'number'
+				) {
+					throw `Uniform '${name}' expected an array of 4 numbers but got something else`;
+				}
+				gl.uniform4fv(uniform.location, value);
 				break;
 
 			case WebGLRenderingContext.FLOAT_MAT4:

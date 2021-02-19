@@ -1,8 +1,8 @@
 import { Shader } from '../shader';
-import vertexSource from './simple.vert.glsl';
-import fragmentSource from './simple.frag.glsl';
+import vertexSource from './material.vert.glsl';
+import fragmentSource from './material.frag.glsl';
 
-export class SimpleShader extends Shader {
+export class MaterialShader extends Shader {
 	make(gl: WebGLRenderingContext) {
 		super.make(gl, vertexSource, fragmentSource, {
 			attributes: {
@@ -20,6 +20,24 @@ export class SimpleShader extends Shader {
 				},
 			},
 			uniforms: {
+				"uMaterial.color": {
+					type: WebGLRenderingContext.FLOAT_VEC4,
+				},
+				"uMaterial.castsShadows": {
+					type: WebGLRenderingContext.BOOL,
+				},
+				"uMaterial.receivesShadows": {
+					type: WebGLRenderingContext.BOOL,
+				},
+				"uMaterial.hasTexture": {
+					type: WebGLRenderingContext.BOOL,
+				},
+				"uMaterial.texture": {
+					type: WebGLRenderingContext.INT,
+				},
+				uTexture: {
+					type: WebGLRenderingContext.INT,
+				},
 				uLight: {
 					type: WebGLRenderingContext.FLOAT_MAT4,
 				},
