@@ -106,6 +106,27 @@ export class Matrix4 {
 		]);
 	}
 
+	static lookAt(from: Point3, to: Point3) {
+		const forward = normalize([
+			from[0] - to[0],
+			from[1] - to[1],
+			from[2] - to[2],
+		]);
+
+		const right = cross([0.0, 1.0, 0.0], forward);
+
+		const up = cross(forward, right);
+
+		const view = new Matrix4([
+			right[0], up[0], forward[0], from[0],
+			right[1], up[1], forward[1], from[1],
+			right[2], up[2], forward[2], from[2],
+		         0,      0,         0,       1,
+		]);
+
+		return view;
+	}
+
 	clone(): Matrix4 {
 		return new Matrix4(this._data);
 	}
@@ -377,6 +398,10 @@ export function cross(p0: Vector3, p1: Vector3): Vector3 {
 }
 
 export function normalize(v: Vector3): Vector3 {
-	const norm = Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+	const norm = magnitude(v);
 	return [v[0] / norm, v[1] / norm, v[2] / norm];
+}
+
+export function magnitude(v: Vector3): number {
+	return Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
 }
