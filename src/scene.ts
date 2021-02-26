@@ -15,8 +15,11 @@ export class Scene {
 	backgroundColor: Color = [0.0, 0.0, 0.0, 1.0];
 	shadowMap: RenderTexture;
 	light: Light;
+	castShadows: false;
 	uniforms?: UniformValues = {
 		uShadowMap: null,
+		uLight: null,
+		uLightDir: null,
 	};
 
 	constructor(renderer: Renderer) {
@@ -110,7 +113,10 @@ export class Scene {
 	}
 
 	async draw(): Promise<number> {
-		this.updateShadowMap();
+		if (this.castShadows) {
+			this.updateShadowMap();
+		}
+		this.updateLightView();
 		return await this.renderer.drawScene(this);
 	}
 
@@ -145,11 +151,15 @@ export class Scene {
 		for (const actor of hiddenActors) {
 			actor.visible = true;
 		}
+	}
 
+	protected updateLightView() {
+		if (!this.light) return;
 		const proj = this.light.projection.clone();
 		const view = this.light.view.inverse();
 		const viewProj = proj.multiply(view);
-		const lightDir = normalize(this.light.view.transformPoint3([0.0, 0.0, -1.0]));
+		const forward = this.light.view.multiplyVector4([0.0, 0.0, 1.0, 0.0]);
+		const lightDir = normalize([forward[0], forward[1], forward[2]]);
 
 		this.uniforms.uLightDir = lightDir;
 		this.uniforms.uLight = viewProj;

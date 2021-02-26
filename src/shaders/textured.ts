@@ -29,7 +29,7 @@ export class TexturedShader extends Shader {
 				uLightDir: {
 					type: WebGLRenderingContext.FLOAT_VEC3,
 				},
-				uShadow: {
+				uShadowMap: {
 					type: WebGLRenderingContext.INT,
 				},
 			},

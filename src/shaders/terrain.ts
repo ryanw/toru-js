@@ -12,6 +12,15 @@ export class TerrainShader extends Shader {
 				uHeightMap: {
 					type: WebGLRenderingContext.INT,
 				},
+				uLight: {
+					type: WebGLRenderingContext.FLOAT_MAT4,
+				},
+				uLightDir: {
+					type: WebGLRenderingContext.FLOAT_VEC3,
+				},
+				uShadowMap: {
+					type: WebGLRenderingContext.INT,
+				},
 			},
 			attributes: {
 				barycentric: {

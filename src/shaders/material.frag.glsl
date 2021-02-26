@@ -1,4 +1,4 @@
-precision mediump float;
+precision highp float;
 
 struct Material {
 	bool castsShadows;
@@ -9,11 +9,13 @@ struct Material {
 };
 
 uniform vec4 uFillColor;
+uniform mat4 uView;
 uniform sampler2D uShadowMap;
 uniform vec3 uLightDir;
 uniform Material uMaterial;
 
 varying vec3 vNormal;
+varying vec3 vViewNormal;
 varying vec3 vPosition;
 varying vec2 vTexCoord;
 varying vec4 vPositionInLight;
@@ -21,6 +23,7 @@ varying vec4 vPositionInLight;
 void main(void) {
 	vec3 lightColor = vec3(1.0);
 	vec3 ambient = 0.1 * lightColor;
+	vec3 lightDir = (vec4(uLightDir, 0.0) * uView).xyz;
 
 
 	float diff = max(dot(vNormal, uLightDir), 0.0);
@@ -28,9 +31,11 @@ void main(void) {
 
 	vec3 viewDir = normalize(-vPosition);
 	vec3 reflectDir = reflect(-uLightDir, vNormal);
-	float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
+	float spec = 0.0;
+	if (diff > 0.0) {
+		spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
+	}
 	vec3 specular = 0.5 * spec * lightColor;
-
 
 	vec4 texColor;
 	if (uMaterial.hasTexture) {

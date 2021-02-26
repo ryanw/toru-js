@@ -15,6 +15,9 @@ export class SpriteShader extends Shader {
 				uSampler: {
 					type: WebGLRenderingContext.INT,
 				},
+				uContrast: {
+					type: WebGLRenderingContext.FLOAT,
+				},
 			},
 		});
 	}

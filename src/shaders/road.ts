@@ -9,6 +9,15 @@ export class RoadShader extends Shader {
 				uRoadOffset: {
 					type: WebGLRenderingContext.FLOAT,
 				},
+				uLight: {
+					type: WebGLRenderingContext.FLOAT_MAT4,
+				},
+				uLightDir: {
+					type: WebGLRenderingContext.FLOAT_VEC3,
+				},
+				uShadowMap: {
+					type: WebGLRenderingContext.INT,
+				},
 			},
 			attributes: {
 				direction: {
