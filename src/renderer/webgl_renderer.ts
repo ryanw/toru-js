@@ -6,6 +6,7 @@ import { Matrix4 } from '../geom';
 import { Mesh } from '../mesh';
 import { Scene } from '../scene';
 import { Texture } from '../texture';
+import { UniformValues } from '../shader';
 import { WebGLMesh } from './webgl_mesh';
 import { WebGLRendererTexture } from './webgl_texture';
 import { WebGLRenderTarget } from './webgl_render_target';
@@ -172,10 +173,21 @@ export class WebGLRenderer extends Renderer {
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	}
 
-	drawActor(actor: Actor, projection?: Matrix4, parentModel?: Matrix4) {
+	drawActor(actor: Actor, projection?: Matrix4, options: { parentModel?: Matrix4, uniforms?: UniformValues } = {}) {
 		if (!actor.visible) return;
 		const { model, material, children } = actor;
+		const { parentModel } = options;
 		const actorModel = parentModel ? parentModel.multiply(model) : model;
+
+		if (material) {
+			actor.uniforms['uMaterial.color'] = material.color;
+			actor.uniforms['uMaterial.hasTexture'] = !!material.texture;
+			actor.uniforms['uMaterial.castsShadows'] = material.castsShadows;
+			actor.uniforms['uMaterial.receivesShadows'] = material.receivesShadows;
+			if (material.texture) {
+				actor.uniforms['uMaterial.texture'] = this.bindTexture(material.texture);
+			}
+		}
 
 		// TODO support multiple meshes on one actor?
 		const mesh = actor.getComponentsOfType(StaticMesh)[0]?.mesh;
@@ -213,9 +225,17 @@ export class WebGLRenderer extends Renderer {
 				gl.uniform4fv(uniforms.uFillColor.location, material.color);
 			}
 
+			if (options?.uniforms) {
+				for (const uniformName in options.uniforms) {
+					if (shader.uniforms[uniformName]) {
+						shader.setUniform(uniformName, options.uniforms[uniformName]);
+					}
+				}
+			}
 			for (const uniformName in actor.uniforms) {
 				shader.setUniform(uniformName, actor.uniforms[uniformName]);
 			}
+
 
 			shader.bind(glMesh);
 			if (actor.hasInstances) {
@@ -227,7 +247,7 @@ export class WebGLRenderer extends Renderer {
 		}
 
 		for (const child of children) {
-			this.drawActor(child, projection, actorModel);
+			this.drawActor(child, projection, { ...options, parentModel: actorModel });
 		}
 	}
 
@@ -282,7 +302,8 @@ export class WebGLRenderer extends Renderer {
 	bindTexture(texture: Texture): number {
 		let glTexture = this.textures.get(texture);
 		if (!glTexture) {
-			throw `Unable to find WebGLRendererTexture`;
+			this.uploadTexture(texture);
+			glTexture = this.textures.get(texture);
 		}
 		return glTexture.bind();
 	}
@@ -365,28 +386,7 @@ export class WebGLRenderer extends Renderer {
 		const viewProj = proj.multiply(view);
 
 		for (const actor of scene.actors) {
-
-			if (actor.material) {
-				const mat = actor.material;
-				actor.uniforms['uMaterial.color'] = mat.color;
-				actor.uniforms['uMaterial.hasTexture'] = !!mat.texture;
-				actor.uniforms['uMaterial.castsShadows'] = mat.castsShadows;
-				actor.uniforms['uMaterial.receivesShadows'] = mat.receivesShadows;
-				if (mat.texture) {
-					actor.uniforms['uMaterial.texture'] = this.bindTexture(mat.texture);
-				}
-			}
-
-			this.drawActor(actor, viewProj);
-
-			// Apply the Scene's uniforms to the current shader
-			if (actor.shader) {
-				for (const uniformName in scene.uniforms) {
-					if (!actor.uniforms[uniformName] && actor.shader.uniforms[uniformName]) {
-						actor.shader.setUniform(uniformName, scene.uniforms[uniformName]);
-					}
-				}
-			}
+			this.drawActor(actor, viewProj, { uniforms: scene.uniforms });
 		}
 
 		// Cleanup after drawing to texture

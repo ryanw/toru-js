@@ -30,17 +30,21 @@ export class Scene {
 			this.renderer.uploadMesh(component.mesh);
 		}
 
+		if (actor.material?.texture) {
+			this.addTexture(actor.material.texture);
+		}
+
 		for (const child of children) {
 			for (const component of child.getComponentsOfType(StaticMesh)) {
 				this.renderer.uploadMesh(component.mesh);
 			}
+
+			if (child.material?.texture) {
+				this.addTexture(child.material.texture);
+			}
 		}
 
 		this.uploadActorInstances(actor);
-
-		if (actor.material?.texture) {
-			this.addTexture(actor.material.texture);
-		}
 
 		this.actors.push(actor);
 		return this.actors.length - 1;
