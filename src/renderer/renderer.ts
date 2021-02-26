@@ -2,12 +2,12 @@ import { Mesh } from '../mesh';
 import { Instance } from '../actor';
 import { Scene } from '../scene';
 import { Texture } from '../texture';
-import { Camera } from '../camera';
+import { Camera, BasicCamera } from '../camera';
 import { RenderTexture } from '../render_texture';
 import { Color } from '../material';
 
 export abstract class Renderer {
-	camera: Camera = new Camera();
+	camera: Camera = new BasicCamera();
 	mousePosition = [0.0, 0.0];
 	mouseMovement = [0.0, 0.0];
 	mouseButtons = new Set();

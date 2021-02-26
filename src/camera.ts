@@ -1,7 +1,63 @@
 import { Matrix4, Point3, Vector3 } from './geom';
 import { Actor } from './actor';
 
-export class Camera extends Actor {
+export interface Camera {
+	width: number;
+	height: number;
+	view: Matrix4;
+	projection: Matrix4;
+	resize(width: number, height: number): void;
+}
+
+export class OrbitCamera extends Actor implements Camera {
+	width: number;
+	height: number;
+	near: number = 0.1;
+	far: number = 1000.0;
+	projection: Matrix4;
+	distance: number = 8.0;
+	target: Point3 = [0.0, 0.0, 0.0];
+	rotation = { lon: 0.0, lat: 0.0 };
+
+	constructor() {
+		super();
+		this.resize(1024, 768);
+	}
+
+	get view(): Matrix4 {
+		const pos = this.target;
+		return Matrix4.identity()
+			.multiply(Matrix4.translation(pos[0], pos[1], pos[2]))
+			.multiply(Matrix4.rotation(0.0, this.rotation.lon, 0.0))
+			.multiply(Matrix4.rotation(this.rotation.lat, 0.0, 0.0))
+			.multiply(Matrix4.translation(0.0, 0.0, this.distance));
+	}
+
+	resize(width: number, height: number): void {
+		this.width = width;
+		this.height = height;
+		this.projection = Matrix4.perspective(width / height, 45.0, this.near, this.far);
+	}
+
+	zoom(amount: number) {
+		this.distance += amount;
+	}
+
+	rotate(lon: number, lat: number) {
+		this.rotation = {
+			lon: this.rotation.lon + lon,
+			lat: this.rotation.lat + lat,
+		};
+		if (this.rotation.lat < -Math.PI / 2) {
+			this.rotation.lat = -Math.PI / 2;
+		}
+		if (this.rotation.lat > Math.PI / 2) {
+			this.rotation.lat = Math.PI / 2;
+		}
+	}
+}
+
+export class BasicCamera extends Actor implements Camera {
 	width: number;
 	height: number;
 	near: number = 1.0;
@@ -29,7 +85,6 @@ export class Camera extends Actor {
 			.multiply(Matrix4.rotation(0, this.rotation[1], 0))
 			.multiply(Matrix4.rotation(this.rotation[0], 0, 0));
 	}
-
 	updateModel() {
 		this.model = this.view;
 	}

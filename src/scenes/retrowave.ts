@@ -8,7 +8,7 @@ import { Quad } from '../meshes/quad';
 import { Road } from '../meshes/road';
 import { Tree } from '../meshes/tree';
 import { Actor } from '../actor';
-import { Camera } from '../camera';
+import { BasicCamera } from '../camera';
 import { Matrix4, Rect } from '../geom';
 import { Texture } from '../texture';
 import { Color } from '../material';
@@ -30,6 +30,7 @@ export class Retrowave extends Scene {
 	roadOffset = 0.0;
 	carPosition = [0.0, 0.0];
 	backgroundColor: Color = [0.2, 0.05, 0.4, 1.0];
+	camera: BasicCamera;
 	private road: Actor;
 	private car: Actor;
 	private tree: Actor;
@@ -74,9 +75,10 @@ export class Retrowave extends Scene {
 	}
 
 	private buildCamera() {
-		const camera = new Camera();
+		const camera = new BasicCamera();
 		this.addActor(camera);
 		this.renderer.camera = camera;
+		this.camera = camera;
 		this.renderer.updateSize();
 
 		// Start mouse in the center
@@ -179,7 +181,7 @@ export class Retrowave extends Scene {
 	private updateCamera() {
 		if (DEBUG_ENABLED) {
 			const renderer = this.renderer;
-			const camera = renderer.camera;
+			const camera = this.camera;
 
 			if (renderer.mouseButtons.has(0)) {
 				const mouseSpeed = 0.0005;

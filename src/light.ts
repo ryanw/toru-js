@@ -1,7 +1,7 @@
 import { Color } from './material';
-import { Camera } from './camera';
+import { BasicCamera } from './camera';
 
-export class Light extends Camera {
+export class Light extends BasicCamera {
 	color: Color = [1.0, 1.0, 1.0, 1.0];
-	castsShadows = true;
+	castsShadows = false;
 }
