@@ -20,6 +20,7 @@ export interface ActorOptions {
 	model?: Matrix4;
 	shader?: Shader;
 	uniforms?: UniformValues;
+	components?: Component[];
 }
 
 export class Actor<I extends Instance = Instance> {
@@ -33,11 +34,21 @@ export class Actor<I extends Instance = Instance> {
 	instances: Map<number, ActorInstance> = new Map();
 	private nextInstanceId = 1;
 
-	constructor(meshOrChildren?: Mesh<Vertex> | Actor[], options: ActorOptions = {}) {
+	constructor(meshOrOptions?: Mesh<Vertex> | Actor[] | ActorOptions, options: ActorOptions = {}) {
+		if (meshOrOptions instanceof Array) {
+			this.children = meshOrOptions;
+		} else if (meshOrOptions instanceof Mesh) {
+			this.components.push(new StaticMesh(meshOrOptions));
+		}
+		else if (typeof meshOrOptions === 'object') {
+			options = meshOrOptions;
+		}
+
 		const material = options.material || new Material();
 		material.color = options.color || material.color;
 
 		this.material = material;
+
 
 		if (options.model) {
 			this.model = options.model;
@@ -54,10 +65,11 @@ export class Actor<I extends Instance = Instance> {
 			};
 		}
 
-		if (meshOrChildren instanceof Array) {
-			this.children = meshOrChildren;
-		} else if (meshOrChildren instanceof Mesh) {
-			this.components.push(new StaticMesh(meshOrChildren));
+		if (options.components) {
+			this.components = [
+				...this.components,
+				...options.components,
+			];
 		}
 	}
 
@@ -105,5 +117,9 @@ export class Actor<I extends Instance = Instance> {
 
 	getComponentsOfType<C extends Component>(klass: Constructable<C>): C[] {
 		return this.components.filter(c => c instanceof klass) as C[];
+	}
+
+	hasComponentOfType<C extends Component>(klass: Constructable<C>): boolean {
+		return Boolean(this.components.find(c => c instanceof klass));
 	}
 }

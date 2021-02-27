@@ -11,6 +11,7 @@ import { WebGLMesh } from './webgl_mesh';
 import { WebGLRendererTexture } from './webgl_texture';
 import { WebGLRenderTarget } from './webgl_render_target';
 import { StaticMesh } from '../components/static_mesh';
+import { Light } from '../components/light';
 import { RenderTexture, Attachment } from '../render_texture';
 import defaultVertSource from '../shaders/wireframe.vert.glsl';
 import defaultFragSource from '../shaders/wireframe.frag.glsl';
@@ -173,6 +174,67 @@ export class WebGLRenderer extends Renderer {
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	}
 
+	drawActorWithShader(shader: Shader, actor: Actor, projection?: Matrix4, options: { parentModel?: Matrix4 } = {}) {
+		if (!actor.visible) return;
+		const { model, material, children } = actor;
+		const { parentModel } = options;
+
+		const actorModel = parentModel ? parentModel.multiply(model) : model;
+
+		if (material) {
+			actor.uniforms['uMaterial.color'] = material.color.length === 3 ? [...material.color, 1.0] : material.color;
+			actor.uniforms['uFillColor'] = actor.uniforms['uMaterial.color'];
+			actor.uniforms['uMaterial.hasTexture'] = !!material.texture;
+			actor.uniforms['uMaterial.hasNormalMap'] = !!material.normalMap;
+			actor.uniforms['uMaterial.hasSpecularMap'] = !!material.specularMap;
+			actor.uniforms['uMaterial.castsShadows'] = material.castsShadows;
+			actor.uniforms['uMaterial.receivesShadows'] = material.receivesShadows;
+			actor.uniforms['uMaterial.emissive'] = material.emissive;
+			if (material.texture) {
+				actor.uniforms['uMaterial.texture'] = this.bindTexture(material.texture);
+			}
+			if (material.normalMap) {
+				actor.uniforms['uMaterial.normalMap'] = this.bindTexture(material.normalMap);
+			}
+			if (material.specularMap) {
+				actor.uniforms['uMaterial.specularMap'] = this.bindTexture(material.specularMap);
+			}
+		}
+
+		if (projection) {
+			shader.setUniform('uViewProj', projection);
+		}
+		shader.setUniform('uModel', actorModel);
+
+		for (const uniformName in actor.uniforms) {
+			shader.setUniform(uniformName, actor.uniforms[uniformName]);
+		}
+
+
+		// Find mesh to draw
+		const mesh = actor.getComponentsOfType(StaticMesh)[0]?.mesh;
+		if (mesh) {
+			let glMesh = this.meshes.get(mesh);
+			if (!glMesh) {
+				this.uploadMesh(mesh);
+				glMesh = this.meshes.get(mesh);
+			}
+
+			shader.bind(glMesh);
+			if (actor.hasInstances) {
+				shader.bindInstances(this.gl, glMesh);
+				glMesh.drawInstances();
+			} else {
+				glMesh.draw();
+			}
+		}
+
+		// Draw children
+		for (const child of children) {
+			this.drawActorWithShader(shader, child, projection, { ...options, parentModel: actorModel });
+		}
+	}
+
 	drawActor(actor: Actor, projection?: Matrix4, options: { parentModel?: Matrix4, uniforms?: UniformValues } = {}) {
 		if (!actor.visible) return;
 		const { model, material, children } = actor;
@@ -180,12 +242,21 @@ export class WebGLRenderer extends Renderer {
 		const actorModel = parentModel ? parentModel.multiply(model) : model;
 
 		if (material) {
-			actor.uniforms['uMaterial.color'] = material.color;
+			actor.uniforms['uMaterial.color'] = material.color.length === 3 ? [...material.color, 1.0] : material.color;
 			actor.uniforms['uMaterial.hasTexture'] = !!material.texture;
+			actor.uniforms['uMaterial.hasNormalMap'] = !!material.normalMap;
+			actor.uniforms['uMaterial.hasSpecularMap'] = !!material.specularMap;
 			actor.uniforms['uMaterial.castsShadows'] = material.castsShadows;
 			actor.uniforms['uMaterial.receivesShadows'] = material.receivesShadows;
+			actor.uniforms['uMaterial.emissive'] = material.emissive;
 			if (material.texture) {
 				actor.uniforms['uMaterial.texture'] = this.bindTexture(material.texture);
+			}
+			if (material.normalMap) {
+				actor.uniforms['uMaterial.normalMap'] = this.bindTexture(material.normalMap);
+			}
+			if (material.specularMap) {
+				actor.uniforms['uMaterial.specularMap'] = this.bindTexture(material.specularMap);
 			}
 		}
 
@@ -211,6 +282,7 @@ export class WebGLRenderer extends Renderer {
 				glMesh = this.meshes.get(mesh);
 			}
 
+			// FIXME deprecate all this
 			if (projection) {
 				gl.uniformMatrix4fv(uniforms.uViewProj.location, false, projection.toArray());
 			}
@@ -222,7 +294,7 @@ export class WebGLRenderer extends Renderer {
 			gl.uniform1f(uniforms.uSeed.location, this.seed);
 			gl.uniformMatrix4fv(uniforms.uModel.location, false, actorModel.toArray());
 			if (material?.color) {
-				gl.uniform4fv(uniforms.uFillColor.location, material.color);
+				gl.uniform4fv(uniforms.uFillColor.location, actor.uniforms['uMaterial.color'] as number[]);
 			}
 
 			if (options?.uniforms) {
@@ -385,8 +457,52 @@ export class WebGLRenderer extends Renderer {
 		const view = this.camera.view.inverse();
 		const viewProj = proj.multiply(view);
 
+		// Batch shaders together
+		const shaderMap = new Map<Shader, Actor[]>();
 		for (const actor of scene.actors) {
-			this.drawActor(actor, viewProj, { uniforms: scene.uniforms });
+			const shader = actor.shader;
+			if (!shader) continue;
+			if (!shaderMap.get(shader)) {
+				shaderMap.set(shader, [])
+			}
+			shaderMap.get(shader).push(actor);
+		}
+
+		for (const shader of shaderMap.keys()) {
+			if (!shader.compiled) {
+				shader.make(this.gl);
+			}
+			shader.use();
+
+
+			// Various global uniforms
+			shader.setUniform('uView', view);
+			shader.setUniform('uFogColor', this.backgroundColor);
+			shader.setUniform('uLineWidth', this.lineWidth);
+			shader.setUniform('uTime', performance.now());
+			shader.setUniform('uResolution', [this.camera.width, this.camera.height]);
+			shader.setUniform('uSeed', this.seed);
+
+			// Scene defined uniforms
+			for (const uniformName in scene.uniforms) {
+				shader.setUniform(uniformName, scene.uniforms[uniformName]);
+			}
+
+			// Lights
+			const lightCount = scene.lights.length;
+			shader.setUniform('uLightCount', lightCount);
+			for (let i = 0; i < lightCount; i++) {
+				const position = scene.lights[i].position;
+				const light = scene.lights[i].getComponentsOfType(Light)[0] as Light;
+				shader.setUniform(`uLights[${i}].position`, position);
+				shader.setUniform(`uLights[${i}].diffuse`, light.diffuse);
+				shader.setUniform(`uLights[${i}].ambient`, light.ambient);
+			}
+
+			// Draw actors with this shader
+			for (const actor of shaderMap.get(shader)) {
+				this.drawActorWithShader(shader, actor, viewProj);
+			}
 		}
 
 		// Cleanup after drawing to texture

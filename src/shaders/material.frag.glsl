@@ -1,48 +1,81 @@
 precision highp float;
 
-struct Material {
-	bool castsShadows;
-	bool receivesShadows;
-	bool hasTexture;
-	vec4 color;
-	sampler2D texture;
-};
+#pragma glslify: Material = require('./structs/material')
+#pragma glslify: Light = require('./structs/light')
 
+uniform mat4 uModel;
 uniform vec4 uFillColor;
 uniform mat4 uView;
 uniform sampler2D uShadowMap;
 uniform vec3 uLightDir;
 uniform Material uMaterial;
+uniform int uLightCount;
+uniform Light uLights[32];
 
 varying vec3 vNormal;
 varying vec3 vViewNormal;
-varying vec3 vPosition;
+varying vec4 vPosition;
 varying vec2 vTexCoord;
 varying vec4 vPositionInLight;
 
 void main(void) {
-	vec3 lightColor = vec3(1.0);
-	vec3 ambient = 0.1 * lightColor;
-	vec3 lightDir = (vec4(uLightDir, 0.0) * uView).xyz;
-
-
-	float diff = max(dot(vNormal, uLightDir), 0.0);
-	vec3 diffuse = diff * lightColor;
-
-	vec3 viewDir = normalize(-vPosition);
-	vec3 reflectDir = reflect(-uLightDir, vNormal);
-	float spec = 0.0;
-	if (diff > 0.0) {
-		spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
+	vec3 texNormal;
+	if (uMaterial.hasNormalMap) {
+		texNormal = normalize(vec4(normalize(vNormal) * texture2D(uMaterial.normalMap, vTexCoord).rgb, 0.0) * uModel * uView).xyz;
 	}
-	vec3 specular = 0.5 * spec * lightColor;
-
+	else {
+		texNormal = normalize(vec4(normalize(vNormal), 0.0) * uModel * uView).xyz;
+	}
 	vec4 texColor;
 	if (uMaterial.hasTexture) {
 		texColor = texture2D(uMaterial.texture, vTexCoord);
 	} else {
 		texColor = uMaterial.color;
 	}
+	float texSpecular = 0.0;
+	if (uMaterial.hasSpecularMap) {
+		texSpecular = texture2D(uMaterial.specularMap, vTexCoord).r;
+	}
+
+	if (uMaterial.emissive) {
+		gl_FragColor = texColor;
+		return;
+	}
+
+	vec4 vertPos4 = vPosition * uView;
+	vec3 vertPos = vertPos4.xyz / vertPos4.w;
+
+	vec3 ambient = vec3(0.0);
+	vec3 diffuse = vec3(0.0);
+	vec3 specular = vec3(0.0);
+
+
+	for (int i = 0; i < 32; i++) {
+		if (i >= uLightCount) break;
+
+		vec4 lightPos4 = vec4(uLights[i].position, 1.0) * uView;
+		vec3 lightPos = lightPos4.xyz / lightPos4.w;
+
+		vec3 lightDir = normalize(lightPos - vertPos);
+		vec3 lightColor = uLights[i].diffuse;
+		ambient += uLights[i].ambient;
+
+		float diff = max(dot(texNormal, lightDir), 0.0);
+		diffuse += diff * lightColor;
+
+		float lambertian = max(dot(texNormal, lightDir), 0.0);
+		float spec = 0.0;
+
+		if (lambertian > 0.0) {
+			vec3 reflectDir = reflect(-lightDir, texNormal);
+			vec3 viewDir = normalize(-vertPos);
+
+			float specAngle = max(dot(reflectDir, viewDir), 0.0);
+			spec = pow(specAngle, 64.0) * texSpecular;
+		}
+		specular += spec * lightColor;
+	}
+
 
 	float shade = 0.0;
 

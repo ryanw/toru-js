@@ -11,7 +11,7 @@ import { Actor } from '../actor';
 import { BasicCamera } from '../camera';
 import { Matrix4, Rect } from '../geom';
 import { Texture } from '../texture';
-import { Color } from '../material';
+import { Material, Color } from '../material';
 
 import deloreanObj from '../delorean.obj';
 import { RoadShader } from '../shaders/road';
@@ -94,6 +94,7 @@ export class Retrowave extends Scene {
 	private buildCity() {
 		const city = new Actor(createCityscape(150, 50), {
 			model: Matrix4.translation(0, -5.0, -650.0),
+			shader: new BuildingShader(),
 		});
 		this.addActor(city);
 	}
@@ -138,15 +139,18 @@ export class Retrowave extends Scene {
 
 	private buildCar() {
 		this.car = new Actor(new Obj(deloreanObj), {
-			color: [0.0, 0.0, 0.0, 1.0],
-			shader: new CarShader(),
+			material: new Material({
+				color: [0.0, 0.0, 0.0, 1.0],
+			}),
 		});
 		const carOutline = new Actor(new Obj(deloreanObj, { flipFaces: true, scale: 1.03 }), {
-			color: [0.0, 1.0, 1.0, 1.0],
-			shader: this.car.shader,
+			material: new Material({
+				color: [0.0, 1.0, 1.0, 1.0],
+			}),
 		});
 		this.addActor(
 			new Actor([this.car, carOutline], {
+				shader: new CarShader(),
 				model: Matrix4.translation(0.0, -3.4, 0.0)
 					.multiply(Matrix4.rotation(0, Math.PI, 0))
 					.multiply(Matrix4.scaling(3.0, 3.0, 3.0)),
@@ -287,7 +291,6 @@ export class Retrowave extends Scene {
 function createCityscape(radius: number, count: number): Actor[] {
 	const actors: Actor[] = [];
 	const buildings: Rect[] = [];
-	const buildingShader = new BuildingShader();
 
 	const maxAttempts = count * 10;
 	let attempts = 0;
@@ -319,9 +322,10 @@ function createCityscape(radius: number, count: number): Actor[] {
 
 			actors.push(
 				new Actor(new Building(width / 5, height / 5, depth / 5), {
-					color: [1.0, 0.0, 0.0, 1.0],
 					model: Matrix4.translation(x, y, z).multiply(Matrix4.scaling(width, height, depth)),
-					shader: buildingShader,
+					material: new Material({
+						color: [1.0, 0.0, 0.0, 1.0],
+					}),
 				})
 			);
 			break pos;

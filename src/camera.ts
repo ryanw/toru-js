@@ -15,7 +15,7 @@ export class OrbitCamera extends Actor implements Camera {
 	near: number = 0.1;
 	far: number = 1000.0;
 	projection: Matrix4;
-	distance: number = 8.0;
+	distance: number = 10.0;
 	target: Point3 = [0.0, 0.0, 0.0];
 	rotation = { lon: 0.0, lat: 0.0 };
 

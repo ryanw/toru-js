@@ -3,6 +3,7 @@ import { Texture } from './texture';
 import { Renderer } from './renderer';
 import { Color } from './material';
 import { StaticMesh } from './components/static_mesh';
+import { Light as LightComponent } from './components/light';
 import { UniformValues } from './shader';
 import { RenderTexture, Attachment } from './render_texture';
 import { Light } from './light';
@@ -15,6 +16,7 @@ export class Scene {
 	backgroundColor: Color = [0.0, 0.0, 0.0, 1.0];
 	shadowMap: RenderTexture;
 	light: Light;
+	lights: Actor[] = [];
 	castShadows: false;
 	uniforms?: UniformValues = {
 		uShadowMap: null,
@@ -29,25 +31,37 @@ export class Scene {
 	addActor(actor: Actor): number {
 		const { children } = actor;
 
-		for (const component of actor.getComponentsOfType(StaticMesh)) {
-			this.renderer.uploadMesh(component.mesh);
-		}
+		const uploadActor = (actor: Actor) => {
+			// Keep track of lights
+			if (actor.hasComponentOfType(LightComponent)) {
+				this.lights.push(actor);
+			}
 
-		if (actor.material?.texture) {
-			this.addTexture(actor.material.texture);
-		}
-
-		for (const child of children) {
-			for (const component of child.getComponentsOfType(StaticMesh)) {
+			// Upload the mesh
+			for (const component of actor.getComponentsOfType(StaticMesh)) {
 				this.renderer.uploadMesh(component.mesh);
 			}
 
-			if (child.material?.texture) {
-				this.addTexture(child.material.texture);
+			// Upload textures
+			if (actor.material?.texture) {
+				this.addTexture(actor.material.texture);
 			}
+			if (actor.material?.normalMap) {
+				this.addTexture(actor.material.normalMap);
+			}
+			if (actor.material?.specularMap) {
+				this.addTexture(actor.material.specularMap);
+			}
+
+			this.uploadActorInstances(actor);
+		};
+
+		uploadActor(actor);
+
+		for (const child of children) {
+			uploadActor(child);
 		}
 
-		this.uploadActorInstances(actor);
 
 		this.actors.push(actor);
 		return this.actors.length - 1;
