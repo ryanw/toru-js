@@ -1,9 +1,10 @@
 import { WebGLRenderer } from './renderer/webgl_renderer';
-import { Retrowave } from './scenes/retrowave';
 
 async function main() {
+	const sceneModule = await import(`./scenes/${SCENE_NAME}`);
+	const SceneClass = sceneModule[SCENE_CLASS];
 	const renderer = new WebGLRenderer(document.body);
-	const scene = new Retrowave(renderer);
+	const scene = new SceneClass(renderer);
 
 	while (true) {
 		await scene.draw();
