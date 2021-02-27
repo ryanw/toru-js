@@ -14,13 +14,15 @@ export abstract class Renderer {
 	mouseButtons = new Set();
 	heldKeys = new Set();
 	backgroundColor: Color = [0.0, 0.0, 0.0, 1.0];
-	updateSize(width?: number, height?: number): void {}
+	updateSize(_width?: number, _height?: number): void {}
 	resetMouseMovement() {
 		this.mouseMovement[0] = 0;
 		this.mouseMovement[1] = 0;
 		this.wheelMovement[0] = 0;
 		this.wheelMovement[1] = 0;
 	}
+	addEventListener(_type: string, _listener: EventListenerOrEventListenerObject, _options?: AddEventListenerOptions): void {}
+	removeEventListener(_type: string, _listener: EventListenerOrEventListenerObject, _options?: EventListenerOptions): void {}
 	abstract uploadMesh(mesh: Mesh): void;
 	abstract uploadMeshInstances<I extends Instance = Instance>(mesh: Mesh, instances: I[]): void;
 	abstract uploadTexture(texture: Texture, unit?: number): number;

@@ -169,6 +169,7 @@ export class WebGLRenderer extends Renderer {
 		this.mouseMovement[1] += e.movementY;
 	};
 
+	// FIXME normalize between browsers
 	onWheel = (e: WheelEvent) => {
 		const dx = e.deltaX;
 		const dy = e.deltaY;
@@ -543,6 +544,16 @@ export class WebGLRenderer extends Renderer {
 		this.canvas.style.height = this.parentElement.clientHeight + 'px';
 		this.canvas.setAttribute('width', parentWidth.toString());
 		this.canvas.setAttribute('height', parentHeight.toString());
+	}
+
+	addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: AddEventListenerOptions) {
+		if (!this.canvas) return;
+		this.canvas.addEventListener(type, listener, options);
+	}
+
+	removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: EventListenerOptions) {
+		if (!this.canvas) return;
+		this.canvas.removeEventListener(type, listener, options);
 	}
 
 	/**

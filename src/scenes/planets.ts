@@ -5,7 +5,7 @@ import { Actor } from '../actor';
 import { Quad } from '../meshes/quad';
 import { Sphere } from '../meshes/sphere';
 import { Cube } from '../meshes/cube';
-import { Matrix4, normalize } from '../geom';
+import { Matrix4, LonLat, Point2, Point3, normalize, raySphereIntersection, pointToLonLat } from '../geom';
 import { Texture } from '../texture';
 import { Material, Color } from '../material';
 import { MaterialShader } from '../shaders/material';
@@ -13,7 +13,8 @@ import { SkyShader } from '../shaders/sky';
 import { Light } from '../components/light';
 import { StaticMesh } from '../components/static_mesh';
 
-const LIGHT_COUNT = 5;
+const LIGHT_COUNT = 4;
+const MAX_ZOOM = 16;
 
 export class Planets extends Scene {
 	backgroundColor: [1.0, 0.0, 0.0, 1.0];
@@ -21,7 +22,7 @@ export class Planets extends Scene {
 	moon: Actor;
 	bulbs: Actor[] = [];
 	camera: OrbitCamera;
-	zoom = 1.0;
+	zoom = 0.0;
 
 	constructor(renderer: Renderer) {
 		super(renderer);
@@ -40,6 +41,54 @@ export class Planets extends Scene {
 		this.buildEarth();
 		this.buildMoon();
 		this.update();
+
+		this.renderer.addEventListener('click', (e: MouseEvent) => {
+			// Viewport -> Camera; relative to center of screen (-1.0..1.0)
+			const x = e.clientX / (e.currentTarget as HTMLElement).clientWidth * 2.0 - 1.0;
+			const y = e.clientY / (e.currentTarget as HTMLElement).clientHeight * 2.0 - 1.0;
+			this.pixelToLonLat([x, y]);
+		});
+	}
+
+	pixelToLonLat(point: Point2): LonLat {
+		const [x, y] = point;
+
+		// Camera -> World
+		const { view, projection } = this.camera;
+		const vp = projection.multiply(view.inverse()).inverse();
+
+		const origin = vp.transformPoint3([x, -y, 0.0]);
+		const dest = vp.transformPoint3([x, -y, 1.0]);
+		const dir = normalize([
+			dest[0] - origin[0],
+			dest[1] - origin[1],
+			dest[2] - origin[2],
+		]);
+
+
+		const planetCenter: Point3 = [0.0, 0.0, -5.0];
+		const hit = raySphereIntersection(planetCenter, 1.0, origin, dir);
+		if (hit) {
+			const surface: Point3 = [
+				hit[0] - planetCenter[0],
+				hit[1] - planetCenter[1],
+				hit[2] - planetCenter[2],
+			];
+
+			// DEBUG
+			const marker = new Actor(new Sphere(8, 8), {
+				model: Matrix4.translation(hit[0], hit[1], hit[2]).multiply(Matrix4.scaling(0.03)),
+				shader: new MaterialShader(),
+				material: new Material({
+					emissive: true,
+					color: [Math.random() + 0.1, Math.random() + 0.1, Math.random() + 0.1, 1.0],
+				}),
+			});
+			this.addActor(marker);
+
+			// Cartesian surface coord to lonlat
+			return pointToLonLat(surface);
+		}
 	}
 
 	private update() {
@@ -67,7 +116,7 @@ export class Planets extends Scene {
 		for (let i = 0; i < LIGHT_COUNT; i++) {
 			const light = new Light({
 				diffuse: [1.0, 1.0, 1.0],
-				ambient: [0.01, 0.01, 0.01],
+				ambient: [0.03, 0.03, 0.03],
 			});
 
 			const bulb = new Actor({
@@ -95,7 +144,7 @@ export class Planets extends Scene {
 
 	private async buildEarth() {
 		const earth = new Actor(new Sphere(32, 32), {
-			model: Matrix4.translation(0.0, 0.0, -5.0).multiply(Matrix4.scaling(2.0)),
+			model: Matrix4.translation(0.0, 0.0, -5.0),
 			shader: new MaterialShader(),
 			material: new Material({
 				castsShadows: false,
@@ -133,7 +182,10 @@ export class Planets extends Scene {
 		camera.target = [0.0, 0.0, -5.0];
 
 		if (renderer.mouseButtons.has(0)) {
-			const mouseSpeed = 0.005;
+			const dist = this.zoom / MAX_ZOOM;
+			const maxSpeed = 0.01;
+			const minSpeed = 0.001;
+			const mouseSpeed = maxSpeed - Math.log2(1 + dist) * (maxSpeed - minSpeed);
 			const [mX, mY] = renderer.mouseMovement;
 
 			const x = -mX * mouseSpeed;
@@ -150,14 +202,17 @@ export class Planets extends Scene {
 
 		const speed = 0.5;
 		const rad = 2.1;
-		if (renderer.wheelMovement[1] != 0) {
-			const zoomSpeed = 0.25;
+		if (renderer.wheelMovement[1] != 0 || this.zoom == 0) {
+			if (this.zoom === 0) this.zoom = 1;
+			const zoomSpeed = 0.5;
 			this.zoom -= renderer.wheelMovement[1] * zoomSpeed;;
 			if (this.zoom < 1) this.zoom = 1;
-			if (this.zoom > 16) this.zoom = 16;
-			let dist = this.zoom / 16;
-			camera.distance = 8 - Math.log2(1 + dist) * 5.999;
-			console.log(dist);
+			if (this.zoom > MAX_ZOOM) this.zoom = MAX_ZOOM;
+			const dist = this.zoom / MAX_ZOOM;
+
+			const maxDist = 4;
+			const minDist = 1.001;
+			camera.distance = maxDist - Math.log2(1 + dist) * (maxDist - minDist);
 		}
 
 
@@ -203,17 +258,18 @@ export class Planets extends Scene {
 				.multiply(Matrix4.translation(Math.cos(t*2.0), Math.sin(t), -1.9 - Math.cos(t)))
 				.multiply(Matrix4.scaling(0.05));
 
-			const light = bulb.getComponentsOfType(Light)[0];
-			light.diffuse[0] = Math.abs(Math.sin(t * (i + 1)));
-			light.diffuse[1] = Math.abs(Math.sin(t * (i + 2)));
-			light.diffuse[2] = Math.abs(Math.sin(t * (i + 3)));
+			if (i > 0) {
+				const light = bulb.getComponentsOfType(Light)[0];
+				light.diffuse[0] = Math.abs(Math.sin(t * (i + 1)));
+				light.diffuse[1] = Math.abs(Math.sin(t * (i + 2)));
+				light.diffuse[2] = Math.abs(Math.sin(t * (i + 3)));
+			}
 		}
 	}
 
 	private updateEarth() {
 		if (this.earth) {
-			this.earth.model = this.earth.model
-				.multiply(Matrix4.rotation(0.0, Math.PI * 0.001, 0.0));
+			//this.earth.model = this.earth.model.multiply(Matrix4.rotation(0.0, Math.PI * 0.001, 0.0));
 		}
 	}
 

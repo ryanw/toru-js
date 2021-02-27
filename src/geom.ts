@@ -5,6 +5,7 @@ export type Vector4 = [number, number, number, number];
 export type Vector3 = [number, number, number];
 export type Vector2 = [number, number];
 export type Rect = [number, number, number, number];
+export type LonLat = [number, number];
 
 export type Columns = [Vector4, Vector4, Vector4, Vector4];
 export type Rows = [Vector4, Vector4, Vector4, Vector4];
@@ -397,6 +398,13 @@ export function cross(p0: Vector3, p1: Vector3): Vector3 {
 	return [x, y, z];
 }
 
+export function dot(p0: Vector3, p1: Vector3): number {
+	const x = p0[0] * p1[0];
+	const y = p0[1] * p1[1];
+	const z = p0[2] * p1[2];
+	return x + y + z;
+}
+
 export function normalize(v: Vector3): Vector3 {
 	const norm = magnitude(v);
 	return [v[0] / norm, v[1] / norm, v[2] / norm];
@@ -404,4 +412,53 @@ export function normalize(v: Vector3): Vector3 {
 
 export function magnitude(v: Vector3): number {
 	return Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+}
+
+export function raySphereIntersection(center: Point3, radius: number, origin: Point3, direction: Vector3): Point3 | null {
+	const p: Vector3 = [
+		origin[0] - center[0],
+		origin[1] - center[1],
+		origin[2] - center[2],
+	];
+
+	const a = Math.pow(magnitude(direction), 2);
+	const b = dot(direction, p);
+	const c = Math.pow(magnitude(p), 2) - radius * radius;
+	const delta = b * b - a * c;
+	if (delta < 0) {
+		return null;
+	}
+
+	const deltaSqrt = Math.sqrt(delta);
+
+	const tmin = (-b - deltaSqrt) / a;
+	const tmax = (-b + deltaSqrt) / a;
+
+	if (tmax < 0) {
+		return null;
+	}
+
+	const t = tmin >= 0 ? tmin : tmax;
+
+	return [
+		origin[0] + t * direction[0],
+		origin[1] + t * direction[1],
+		origin[2] + t * direction[2],
+	];
+}
+
+export function pointToLonLat(point: Point3): LonLat {
+	const v = normalize(point);
+	const p = normalize([v[0], 0, v[2]]);
+	let lat = Math.acos(dot(p, v));
+	if (v[1] < 0) {
+		lat *= -1;
+	}
+	let lon = -Math.atan2(-v[2], -v[0]) - Math.PI / 2;
+	if (lon < -Math.PI) {
+		lon += Math.PI * 2;
+	}
+
+
+	return [lon, lat];
 }
