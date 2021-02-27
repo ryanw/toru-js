@@ -21,6 +21,7 @@ export class Planets extends Scene {
 	moon: Actor;
 	bulbs: Actor[] = [];
 	camera: OrbitCamera;
+	zoom = 1.0;
 
 	constructor(renderer: Renderer) {
 		super(renderer);
@@ -51,6 +52,8 @@ export class Planets extends Scene {
 
 	private buildCamera() {
 		const camera = new OrbitCamera();
+		camera.near = 1/1000;
+		camera.far = 100;
 		this.addActor(camera);
 		this.renderer.camera = camera;
 		this.renderer.updateSize();
@@ -143,10 +146,21 @@ export class Planets extends Scene {
 				.multiply(Matrix4.rotation(-y, 0.0, 0.0));
 			*/
 		}
-		renderer.resetMouseMovement();
+
 
 		const speed = 0.5;
 		const rad = 2.1;
+		if (renderer.wheelMovement[1] != 0) {
+			const zoomSpeed = 0.25;
+			this.zoom -= renderer.wheelMovement[1] * zoomSpeed;;
+			if (this.zoom < 1) this.zoom = 1;
+			if (this.zoom > 16) this.zoom = 16;
+			let dist = this.zoom / 16;
+			camera.distance = 8 - Math.log2(1 + dist) * 5.999;
+			console.log(dist);
+		}
+
+
 		if (renderer.heldKeys.has('w')) {
 			camera.distance = (camera.distance - rad) * 0.9 + rad;
 		}
@@ -170,6 +184,8 @@ export class Planets extends Scene {
 		if (renderer.heldKeys.has('e')) {
 			camera.rotate(0.0, speed * 0.1);
 		}
+
+		renderer.resetMouseMovement();
 	}
 
 	private updateLight() {

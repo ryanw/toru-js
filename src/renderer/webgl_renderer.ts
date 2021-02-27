@@ -126,6 +126,7 @@ export class WebGLRenderer extends Renderer {
 		window.addEventListener('mousemove', this.onMouseMove);
 		window.addEventListener('mouseup', this.onMouseUp);
 		window.addEventListener('mousedown', this.onMouseDown);
+		window.addEventListener('wheel', this.onWheel);
 	}
 
 	removeEventListeners() {
@@ -136,6 +137,7 @@ export class WebGLRenderer extends Renderer {
 		window.removeEventListener('mousemove', this.onMouseMove);
 		window.removeEventListener('mouseup', this.onMouseUp);
 		window.removeEventListener('mousedown', this.onMouseDown);
+		window.removeEventListener('wheel', this.onWheel);
 	}
 
 	onPointerLockChange = () => {
@@ -165,6 +167,13 @@ export class WebGLRenderer extends Renderer {
 		this.mousePosition[1] = e.clientY;
 		this.mouseMovement[0] += e.movementX;
 		this.mouseMovement[1] += e.movementY;
+	};
+
+	onWheel = (e: WheelEvent) => {
+		const dx = e.deltaX;
+		const dy = e.deltaY;
+		this.wheelMovement[0] += dx;
+		this.wheelMovement[1] += dy;
 	};
 
 	clear() {

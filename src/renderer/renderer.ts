@@ -10,6 +10,7 @@ export abstract class Renderer {
 	camera: Camera = new BasicCamera();
 	mousePosition = [0.0, 0.0];
 	mouseMovement = [0.0, 0.0];
+	wheelMovement = [0.0, 0.0];
 	mouseButtons = new Set();
 	heldKeys = new Set();
 	backgroundColor: Color = [0.0, 0.0, 0.0, 1.0];
@@ -17,6 +18,8 @@ export abstract class Renderer {
 	resetMouseMovement() {
 		this.mouseMovement[0] = 0;
 		this.mouseMovement[1] = 0;
+		this.wheelMovement[0] = 0;
+		this.wheelMovement[1] = 0;
 	}
 	abstract uploadMesh(mesh: Mesh): void;
 	abstract uploadMeshInstances<I extends Instance = Instance>(mesh: Mesh, instances: I[]): void;
