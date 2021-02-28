@@ -49,7 +49,6 @@ export class WebGLRenderer extends Renderer {
 
 		Object.assign(this.canvas.style, {
 			position: 'fixed',
-			zIndex: -1,
 			left: 0,
 			right: 0,
 			top: 0,
