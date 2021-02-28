@@ -1,13 +1,14 @@
 import { Shader } from '../shader';
 import vertexSource from './material.vert.glsl';
 import fragmentSource from './material.frag.glsl';
+import fragmentSourceSphere from './material_sphere.frag.glsl';
 
 const MAX_LIGHT_COUNT = 8;
 
 type UniformMap = Shader['uniforms'];
 
 export class MaterialShader extends Shader {
-	make(gl: WebGLRenderingContext) {
+	make(gl: WebGLRenderingContext, vertSource?: string, fragSource?: string) {
 		const lightUniforms: UniformMap = {
 			uLightCount: {
 				type: WebGLRenderingContext.INT,
@@ -25,7 +26,7 @@ export class MaterialShader extends Shader {
 			lightUniforms[`${uniformName}.quadratic`] = { type: WebGLRenderingContext.FLOAT };
 		}
 
-		super.make(gl, vertexSource, fragmentSource, {
+		super.make(gl, vertSource || vertexSource, fragSource || fragmentSource, {
 			attributes: {
 				color: {
 					type: WebGLRenderingContext.FLOAT,
@@ -90,5 +91,11 @@ export class MaterialShader extends Shader {
 				},
 			},
 		});
+	}
+}
+
+export class SphereMaterialShader extends MaterialShader {
+	make(gl: WebGLRenderingContext) {
+		super.make(gl, vertexSource, fragmentSourceSphere);
 	}
 }
