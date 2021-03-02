@@ -23,6 +23,9 @@ export abstract class Renderer {
 	}
 	addEventListener(_type: string, _listener: EventListenerOrEventListenerObject, _options?: AddEventListenerOptions): void {}
 	removeEventListener(_type: string, _listener: EventListenerOrEventListenerObject, _options?: EventListenerOptions): void {}
+	get isDragging(): boolean {
+		return false;
+	}
 	abstract uploadMesh(mesh: Mesh): void;
 	abstract uploadMeshInstances<I extends Instance = Instance>(mesh: Mesh, instances: I[]): void;
 	abstract uploadTexture(texture: Texture, unit?: number): number;

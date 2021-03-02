@@ -1,5 +1,6 @@
 import { Shader } from '../shader';
 import vertexSource from './material.vert.glsl';
+import vertexSourceSphere from './material_sphere.vert.glsl';
 import fragmentSource from './material.frag.glsl';
 import fragmentSourceSphere from './material_sphere.frag.glsl';
 
@@ -53,6 +54,9 @@ export class MaterialShader extends Shader {
 				"uMaterial.receivesShadows": {
 					type: WebGLRenderingContext.BOOL,
 				},
+				"uMaterial.displacementMultiplier": {
+					type: WebGLRenderingContext.FLOAT,
+				},
 				"uMaterial.hasTexture": {
 					type: WebGLRenderingContext.BOOL,
 				},
@@ -62,6 +66,9 @@ export class MaterialShader extends Shader {
 				"uMaterial.hasSpecularMap": {
 					type: WebGLRenderingContext.BOOL,
 				},
+				"uMaterial.hasDisplacementMap": {
+					type: WebGLRenderingContext.BOOL,
+				},
 				"uMaterial.texture": {
 					type: WebGLRenderingContext.INT,
 				},
@@ -69,6 +76,9 @@ export class MaterialShader extends Shader {
 					type: WebGLRenderingContext.INT,
 				},
 				"uMaterial.specularMap": {
+					type: WebGLRenderingContext.INT,
+				},
+				"uMaterial.displacementMap": {
 					type: WebGLRenderingContext.INT,
 				},
 				"uMaterial.emissive": {
@@ -96,6 +106,6 @@ export class MaterialShader extends Shader {
 
 export class SphereMaterialShader extends MaterialShader {
 	make(gl: WebGLRenderingContext) {
-		super.make(gl, vertexSource, fragmentSourceSphere);
+		super.make(gl, vertexSourceSphere, fragmentSourceSphere);
 	}
 }

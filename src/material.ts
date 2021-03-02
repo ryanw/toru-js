@@ -7,6 +7,8 @@ export interface MaterialOptions {
 	texture?: Texture;
 	normalMap?: Texture;
 	specularMap?: Texture;
+	displacementMap?: Texture;
+	displacementMultiplier?: number;
 	receivesShadows?: boolean;
 	castsShadows?: boolean;
 	emissive?: boolean;
@@ -17,6 +19,8 @@ export class Material {
 	texture?: Texture = null;
 	normalMap?: Texture = null;
 	specularMap?: Texture = null;
+	displacementMap?: Texture = null;
+	displacementMultiplier = 1.0;
 	receivesShadows = true;
 	castsShadows = true;
 	emissive = false;
@@ -33,6 +37,12 @@ export class Material {
 		}
 		if (props?.specularMap != null) {
 			this.specularMap = props.specularMap;
+		}
+		if (props?.displacementMap != null) {
+			this.displacementMap = props.displacementMap;
+		}
+		if (props?.displacementMultiplier != null) {
+			this.displacementMultiplier = props.displacementMultiplier;
 		}
 		if (props?.receivesShadows != null) {
 			this.receivesShadows = props.receivesShadows;

@@ -18,6 +18,8 @@ import defaultFragSource from '../shaders/wireframe.frag.glsl';
 
 const DEBUG_ENABLED = !PRODUCTION || window.location.search.indexOf('debug') !== -1;
 
+type ExtWheelEvent = WheelEvent & { wheelDelta: number, axis: number, HORIZONTAL_AXIS: 0x01, VERTICAL_AXIS: 0x02 };
+
 export class WebGLRenderer extends Renderer {
 	canvas: HTMLCanvasElement;
 	debugEl: HTMLElement;
@@ -31,6 +33,7 @@ export class WebGLRenderer extends Renderer {
 	frame = 0;
 	isGrabbed = false;
 	seed = Math.random();
+	private dragDelta = [0, 0];
 	private context: WebGLRenderingContext;
 	private textures: Map<Texture, WebGLRendererTexture> = new Map();
 	private meshes: Map<Mesh<Vertex>, WebGLMesh<Vertex>> = new Map();
@@ -54,6 +57,14 @@ export class WebGLRenderer extends Renderer {
 			top: 0,
 			bottom: 0,
 		});
+	}
+
+	get isDragging(): boolean {
+		if (Math.abs(this.dragDelta[0]) > 4 || Math.abs(this.dragDelta[1]) > 4) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
@@ -118,17 +129,18 @@ export class WebGLRenderer extends Renderer {
 		this.removeEventListeners();
 	}
 
-	addEventListeners() {
+	private addEventListeners() {
 		document.addEventListener('pointerlockchange', this.onPointerLockChange);
 		window.addEventListener('keydown', this.onKeyDown);
 		window.addEventListener('keyup', this.onKeyUp);
 		window.addEventListener('mousemove', this.onMouseMove);
 		window.addEventListener('mouseup', this.onMouseUp);
 		window.addEventListener('mousedown', this.onMouseDown);
-		window.addEventListener('wheel', this.onWheel);
+		window.addEventListener('wheel', this.onWheel, { passive: false });
+		window.addEventListener('DOMMouseScroll', this.onWheel, { passive: false });
 	}
 
-	removeEventListeners() {
+	private removeEventListeners() {
 		this.heldKeys.clear();
 		document.removeEventListener('pointerlockchange', this.onPointerLockChange);
 		window.removeEventListener('keydown', this.onKeyDown);
@@ -137,6 +149,7 @@ export class WebGLRenderer extends Renderer {
 		window.removeEventListener('mouseup', this.onMouseUp);
 		window.removeEventListener('mousedown', this.onMouseDown);
 		window.removeEventListener('wheel', this.onWheel);
+		window.removeEventListener('DOMMouseScroll', this.onWheel);
 	}
 
 	onPointerLockChange = () => {
@@ -154,24 +167,54 @@ export class WebGLRenderer extends Renderer {
 	};
 
 	onMouseDown = (e: MouseEvent) => {
+		this.dragDelta[0] = 0;
+		this.dragDelta[1] = 0;
 		this.mouseButtons.add(e.button);
 	};
 
 	onMouseUp = (e: MouseEvent) => {
+		setTimeout(() => {
+			this.dragDelta[0] = 0;
+			this.dragDelta[1] = 0;
+		}, 1);
 		this.mouseButtons.delete(e.button);
 	};
 
 	onMouseMove = (e: MouseEvent) => {
+		if (this.mouseButtons.size > 0) {
+			this.dragDelta[0] += e.movementX;
+			this.dragDelta[1] += e.movementY;
+		}
 		this.mousePosition[0] = e.clientX;
 		this.mousePosition[1] = e.clientY;
 		this.mouseMovement[0] += e.movementX;
 		this.mouseMovement[1] += e.movementY;
 	};
 
-	// FIXME normalize between browsers
-	onWheel = (e: WheelEvent) => {
-		const dx = e.deltaX;
-		const dy = e.deltaY;
+	onWheel = (e: ExtWheelEvent) => {
+		// Ignore Firefox 'onwheel'
+		if (!e.axis && !e.wheelDelta) return;
+		e.preventDefault();
+
+		let dx = 0;
+		let dy = 0;
+
+		if (!e.wheelDelta && e.detail) {
+			// Firefox (DOMMouseScroll)
+			const amount = e.detail * 53 / 3;
+			if (e.axis === e.HORIZONTAL_AXIS) {
+				dx = amount;
+			}
+			else {
+				dy = amount;
+			}
+		}
+		else {
+			// Proper wheel event
+			dx = e.deltaX;
+			dy = e.deltaY;
+		}
+
 		this.wheelMovement[0] += dx;
 		this.wheelMovement[1] += dy;
 	};
@@ -196,9 +239,11 @@ export class WebGLRenderer extends Renderer {
 			actor.uniforms['uMaterial.hasTexture'] = !!material.texture;
 			actor.uniforms['uMaterial.hasNormalMap'] = !!material.normalMap;
 			actor.uniforms['uMaterial.hasSpecularMap'] = !!material.specularMap;
+			actor.uniforms['uMaterial.hasDisplacementMap'] = !!material.displacementMap;
 			actor.uniforms['uMaterial.castsShadows'] = material.castsShadows;
 			actor.uniforms['uMaterial.receivesShadows'] = material.receivesShadows;
 			actor.uniforms['uMaterial.emissive'] = material.emissive;
+			actor.uniforms['uMaterial.displacementMultiplier'] = material.displacementMultiplier;
 			if (material.texture) {
 				actor.uniforms['uMaterial.texture'] = this.bindTexture(material.texture);
 			}
@@ -207,6 +252,9 @@ export class WebGLRenderer extends Renderer {
 			}
 			if (material.specularMap) {
 				actor.uniforms['uMaterial.specularMap'] = this.bindTexture(material.specularMap);
+			}
+			if (material.displacementMap) {
+				actor.uniforms['uMaterial.displacementMap'] = this.bindTexture(material.displacementMap);
 			}
 		}
 
@@ -255,9 +303,11 @@ export class WebGLRenderer extends Renderer {
 			actor.uniforms['uMaterial.hasTexture'] = !!material.texture;
 			actor.uniforms['uMaterial.hasNormalMap'] = !!material.normalMap;
 			actor.uniforms['uMaterial.hasSpecularMap'] = !!material.specularMap;
+			actor.uniforms['uMaterial.hasDisplacementMap'] = !!material.displacementMap;
 			actor.uniforms['uMaterial.castsShadows'] = material.castsShadows;
 			actor.uniforms['uMaterial.receivesShadows'] = material.receivesShadows;
 			actor.uniforms['uMaterial.emissive'] = material.emissive;
+			actor.uniforms['uMaterial.displacementMultiplier'] = material.displacementMultiplier;
 			if (material.texture) {
 				actor.uniforms['uMaterial.texture'] = this.bindTexture(material.texture);
 			}
@@ -266,6 +316,9 @@ export class WebGLRenderer extends Renderer {
 			}
 			if (material.specularMap) {
 				actor.uniforms['uMaterial.specularMap'] = this.bindTexture(material.specularMap);
+			}
+			if (material.displacementMap) {
+				actor.uniforms['uMaterial.displacementMap'] = this.bindTexture(material.displacementMap);
 			}
 		}
 
