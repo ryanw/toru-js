@@ -1,0 +1,32 @@
+import { Actor } from './actor';
+import { Texture } from './texture';
+import { Renderer } from './renderer';
+import { Color } from './material';
+import { UniformValues } from './shader';
+import { RenderTexture } from './render_texture';
+import { Light } from './light';
+export declare class Scene {
+    actors: Actor[];
+    textures: Map<number, Texture>;
+    renderer: Renderer;
+    backgroundColor: Color;
+    shadowMap: RenderTexture;
+    light: Light;
+    lights: Actor[];
+    castShadows: false;
+    uniforms?: UniformValues;
+    constructor(renderer: Renderer);
+    addActor(actor: Actor): number;
+    uploadActorInstances(actor: Actor): void;
+    addTexture(texture: Texture): number;
+    getIdOfTexture(texture: Texture): number | null;
+    updateTexture(textureOrId: Texture | number): void;
+    bindTexture(textureOrId: Texture | number): number;
+    unbindTexture(textureOrId: Texture | number): void;
+    draw(): Promise<number>;
+    protected createShadowMap(): void;
+    protected updateShadowMap(): void;
+    protected updateLightView(): void;
+    private enableShadows;
+    private disableShadows;
+}

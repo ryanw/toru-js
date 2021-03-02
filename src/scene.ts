@@ -52,6 +52,9 @@ export class Scene {
 			if (actor.material?.specularMap) {
 				this.addTexture(actor.material.specularMap);
 			}
+			if (actor.material?.displacementMap) {
+				this.addTexture(actor.material.displacementMap);
+			}
 
 			this.uploadActorInstances(actor);
 		};

@@ -14,10 +14,8 @@ export * from './render_texture';
 export * from './shaders/material';
 export * from './shaders/sprite';
 export * from './shaders/simple';
-
 export * from './components/static_mesh';
 export { Light as LightComponent } from './components/light';
-
 export * from './meshes/obj';
 export * from './meshes/cube';
 export * from './meshes/sphere';

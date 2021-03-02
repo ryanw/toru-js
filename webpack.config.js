@@ -12,12 +12,12 @@ const sceneClass = camelCase(sceneName);
 
 module.exports = {
 	mode: production ? 'production' : 'development',
-	entry: {
-		main: './src/index.ts',
-	},
+	entry: './src/index.ts',
 	output: {
-		filename: '[name].bundle.js',
+		filename: 'index.js',
 		path: path.resolve(__dirname, 'dist'),
+		library: 'toru',
+		libraryTarget: 'umd',
 	},
 	devtool: 'source-map',
 	devServer: {

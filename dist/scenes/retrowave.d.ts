@@ -1,0 +1,37 @@
+import { Scene } from '../scene';
+import { Renderer } from '../renderer';
+import { BasicCamera } from '../camera';
+import { Color } from '../material';
+export declare class Retrowave extends Scene {
+    roadSpeed: number;
+    roadOffset: number;
+    carPosition: number[];
+    backgroundColor: Color;
+    camera: BasicCamera;
+    private road;
+    private car;
+    private tree;
+    private terrain;
+    private heightMap;
+    private hillNoise;
+    private terrainSize;
+    constructor(renderer: Renderer);
+    draw(): Promise<number>;
+    private build;
+    update(): void;
+    private buildCamera;
+    private buildSky;
+    private buildCity;
+    private buildRoad;
+    private buildSun;
+    private buildTrees;
+    private buildCar;
+    private buildTerrain;
+    private buildDebug;
+    private updateCamera;
+    private updateRoad;
+    private updateTrees;
+    private updateTerrain;
+    private updateCar;
+    private updateDebug;
+}

@@ -1,8 +1,9 @@
 {
-  "name": "ryan.nz",
-  "version": "1.0.0",
+  "name": "toru",
+  "version": "0.1.0",
   "description": "",
-  "main": "index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "lint": "eslint -c eslint.json --fix 'src/**/*.ts' || true",
     "server": "webpack serve",
@@ -10,7 +11,7 @@
     "docs": "typedoc",
     "test": "jest src"
   },
-  "author": "",
+  "author": "Ryan Williams <git@ryan.nz>",
   "license": "MIT",
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^3.9.0",
@@ -29,7 +30,5 @@
     "webpack-cli": "^4.0.0",
     "webpack-dev-server": "^3.11.0"
   },
-  "dependencies": {
-    "simplex-noise": "^2.4.0"
-  }
+  "dependencies": {}
 }
