@@ -391,6 +391,10 @@ export function addVector4(vec: Vector4, other: Vector4): Vector4 {
 	return [vec[0] + other[0], vec[1] + other[1], vec[2] + other[2], vec[3] + other[3]];
 }
 
+export function subtractVector4(vec: Vector4, other: Vector4): Vector4 {
+	return [vec[0] - other[0], vec[1] - other[1], vec[2] - other[2], vec[3] - other[3]];
+}
+
 export function multiplyVector4(vec: Vector4, other: Vector4): Vector4 {
 	return [vec[0] * other[0], vec[1] * other[1], vec[2] * other[2], vec[3] * other[3]];
 }
@@ -403,8 +407,17 @@ export function addVector3(vec: Vector3, other: Vector3): Vector3 {
 	return [vec[0] + other[0], vec[1] + other[1], vec[2] + other[2]];
 }
 
+export function subtractVector3(vec: Vector3, other: Vector3): Vector3 {
+	return [vec[0] - other[0], vec[1] - other[1], vec[2] - other[2]];
+}
+
 export function multiplyVector3(vec: Vector3, other: Vector3): Vector3 {
 	return [vec[0] * other[0], vec[1] * other[1], vec[2] * other[2]];
+}
+
+export function distanceVector3(vec: Vector3, other: Vector3): number {
+	const diff = subtractVector3(vec, other);
+	return Math.abs(magnitude(diff));
 }
 
 export function cross(p0: Vector3, p1: Vector3): Vector3 {
@@ -475,6 +488,16 @@ export function pointToLonLat(point: Point3): LonLat {
 		lon += Math.PI * 2;
 	}
 
-
 	return [lon, lat];
+}
+
+export function lonLatToPoint(ll: LonLat, radius: number = 1): Point3 {
+	const lon = ll[0] - Math.PI;
+	const lat = ll[1] - Math.PI / 2;
+
+	const x = radius * Math.sin(lat) * Math.sin(lon);
+	const y = radius * Math.cos(lat);
+	const z = radius * Math.sin(lat) * Math.cos(lon);
+
+	return [x, y, z];
 }
