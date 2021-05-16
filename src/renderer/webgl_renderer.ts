@@ -281,6 +281,8 @@ export class WebGLRenderer extends Renderer {
 			if (actor.hasInstances) {
 				shader.bindInstances(this.gl, glMesh);
 				glMesh.drawInstances();
+			} else if (material.wireframe) {
+				glMesh.drawLines();
 			} else {
 				glMesh.draw();
 			}

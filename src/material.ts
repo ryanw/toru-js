@@ -12,6 +12,7 @@ export interface MaterialOptions {
 	receivesShadows?: boolean;
 	castsShadows?: boolean;
 	emissive?: boolean;
+	wireframe?: boolean;
 }
 
 export class Material {
@@ -24,6 +25,7 @@ export class Material {
 	receivesShadows = true;
 	castsShadows = true;
 	emissive = false;
+	wireframe = false;
 
 	constructor(props?: MaterialOptions) {
 		if (props?.color != null) {
@@ -52,6 +54,9 @@ export class Material {
 		}
 		if (props?.emissive != null) {
 			this.emissive = props.emissive;
+		}
+		if (props?.wireframe != null) {
+			this.wireframe = props.wireframe;
 		}
 	}
 }

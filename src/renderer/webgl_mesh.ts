@@ -133,6 +133,11 @@ export class WebGLMesh<T extends Vertex = Vertex> {
 		this.gl.drawArrays(this.gl.TRIANGLES, 0, this.length);
 	}
 
+	drawLines() {
+		this.gl.lineWidth(1);
+		this.gl.drawArrays(this.gl.LINE_STRIP, 0, this.length);
+	}
+
 	drawInstances() {
 		const ext = this.gl.getExtension('ANGLE_instanced_arrays');
 		ext.drawArraysInstancedANGLE(this.gl.TRIANGLES, 0, this.length, this.instanceLength);
