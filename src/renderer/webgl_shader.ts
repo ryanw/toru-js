@@ -265,17 +265,27 @@ export class WebGLShader {
 				break;
 
 			case WebGLRenderingContext.FLOAT:
-				if (typeof value !== 'number') {
+				if (typeof value === 'number') {
+					gl.uniform1f(uniform.location, value);
+				}
+				else if (Array.isArray(value) && typeof value[0] === 'number') {
+					gl.uniform1fv(uniform.location, value);
+				}
+				else {
 					throw `Uniform '${name}' expected number but got: ${typeof value}`;
 				}
-				gl.uniform1f(uniform.location, value);
 				break;
 
 			case WebGLRenderingContext.INT:
-				if (typeof value !== 'number') {
+				if (typeof value === 'number') {
+					gl.uniform1i(uniform.location, value);
+				}
+				else if (Array.isArray(value) && typeof value[0] === 'number') {
+					gl.uniform1iv(uniform.location, value);
+				}
+				else {
 					throw `Uniform '${name}' expected number but got: ${typeof value}`;
 				}
-				gl.uniform1i(uniform.location, value);
 				break;
 
 			case WebGLRenderingContext.FLOAT_VEC2:
