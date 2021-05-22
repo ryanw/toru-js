@@ -64,7 +64,7 @@ export class BasicCamera extends Actor implements Camera {
 	far: number = 2000.0;
 	projection: Matrix4;
 	position: Point3 = [0.0, 1.0, 0.0];
-	rotation: Vector3 = [-0.1, 0.0, 0.0];
+	rotation: Vector3 = [0.0, 0.0, 0.0];
 	scaling: Vector3 = [1.0, 1.0, 1.0];
 
 	constructor() {
@@ -92,6 +92,14 @@ export class BasicCamera extends Actor implements Camera {
 	rotate(x: number, y: number) {
 		this.rotation[0] -= Math.PI * x;
 		this.rotation[1] -= Math.PI * y;
+
+		if (this.rotation[0] < -Math.PI / 2 + 0.01) {
+			this.rotation[0] = -Math.PI / 2 + 0.01;
+		}
+		if (this.rotation[0] > Math.PI / 2 - 0.01) {
+			this.rotation[0] = Math.PI / 2 - 0.01;
+		}
+
 		this.updateModel();
 	}
 
