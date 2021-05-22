@@ -73,4 +73,12 @@ export class Texture {
 		}
 		throw `Can't get data of an HTMLImageElement`;
 	}
+
+	get width(): number {
+		return this.pixels.width;
+	}
+
+	get height(): number {
+		return this.pixels.height;
+	}
 }
