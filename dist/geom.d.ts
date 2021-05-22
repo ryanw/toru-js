@@ -36,13 +36,17 @@ export declare class Matrix4 {
 }
 export declare function scaleVector4(vec: Vector4, scale: number): Vector4;
 export declare function addVector4(vec: Vector4, other: Vector4): Vector4;
+export declare function subtractVector4(vec: Vector4, other: Vector4): Vector4;
 export declare function multiplyVector4(vec: Vector4, other: Vector4): Vector4;
 export declare function scaleVector3(vec: Vector3, scale: number): Vector3;
 export declare function addVector3(vec: Vector3, other: Vector3): Vector3;
+export declare function subtractVector3(vec: Vector3, other: Vector3): Vector3;
 export declare function multiplyVector3(vec: Vector3, other: Vector3): Vector3;
+export declare function distanceVector3(vec: Vector3, other: Vector3): number;
 export declare function cross(p0: Vector3, p1: Vector3): Vector3;
 export declare function dot(p0: Vector3, p1: Vector3): number;
 export declare function normalize(v: Vector3): Vector3;
 export declare function magnitude(v: Vector3): number;
 export declare function raySphereIntersection(center: Point3, radius: number, origin: Point3, direction: Vector3): Point3 | null;
 export declare function pointToLonLat(point: Point3): LonLat;
+export declare function lonLatToPoint(ll: LonLat, radius?: number): Point3;

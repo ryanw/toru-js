@@ -15,4 +15,6 @@ export declare class Texture {
     putImage(image: HTMLImageElement): void;
     putPixels(pixels: ImageData | HTMLImageElement): void;
     get data(): Uint8ClampedArray;
+    get width(): number;
+    get height(): number;
 }

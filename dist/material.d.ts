@@ -10,6 +10,7 @@ export interface MaterialOptions {
     receivesShadows?: boolean;
     castsShadows?: boolean;
     emissive?: boolean;
+    wireframe?: boolean;
 }
 export declare class Material {
     color: Color;
@@ -21,5 +22,6 @@ export declare class Material {
     receivesShadows: boolean;
     castsShadows: boolean;
     emissive: boolean;
+    wireframe: boolean;
     constructor(props?: MaterialOptions);
 }

@@ -16,5 +16,6 @@ export declare class WebGLMesh<T extends Vertex = Vertex> {
     uploadInstances<I extends Instance>(instances: I[]): void;
     bind(): void;
     draw(): void;
+    drawLines(): void;
     drawInstances(): void;
 }
