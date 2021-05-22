@@ -427,8 +427,8 @@ export class WebGLRenderer extends Renderer {
 			glTexture = WebGLRendererTexture.fromTexture(gl, texture);
 			this.textures.set(texture, glTexture);
 		}
-		if (!unit && !glTexture.unit) {
-			unit = this.textures.size;
+		if (unit == null && glTexture.unit == null) {
+			unit = this.textures.size - 1;
 		}
 		glTexture.upload(texture, unit != null ? unit : glTexture.unit);
 
