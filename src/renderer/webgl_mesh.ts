@@ -14,6 +14,7 @@ export class WebGLMesh<T extends Vertex = Vertex> {
 	instanceStride: number;
 	instanceOffsets: Map<keyof T, number> = new Map();
 	instanceLength: number;
+	doubleSided: boolean = false;
 	gl: WebGLRenderingContext;
 
 	constructor(gl: WebGLRenderingContext) {
@@ -68,6 +69,8 @@ export class WebGLMesh<T extends Vertex = Vertex> {
 		// Upload data to the GPU
 		this.bind();
 		gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
+
+		this.doubleSided = mesh.doubleSided;
 	}
 
 	uploadInstances<I extends Instance>(instances: I[]) {
@@ -130,16 +133,27 @@ export class WebGLMesh<T extends Vertex = Vertex> {
 	}
 
 	draw() {
+		this.setFaceCulling();
 		this.gl.drawArrays(this.gl.TRIANGLES, 0, this.length);
 	}
 
 	drawLines() {
+		this.setFaceCulling();
 		this.gl.lineWidth(1);
 		this.gl.drawArrays(this.gl.LINE_STRIP, 0, this.length);
 	}
 
 	drawInstances() {
+		this.setFaceCulling();
 		const ext = this.gl.getExtension('ANGLE_instanced_arrays');
 		ext.drawArraysInstancedANGLE(this.gl.TRIANGLES, 0, this.length, this.instanceLength);
+	}
+
+	private setFaceCulling() {
+		if (this.doubleSided) {
+			this.gl.disable(this.gl.CULL_FACE);
+		} else {
+			this.gl.enable(this.gl.CULL_FACE);
+		}
 	}
 }

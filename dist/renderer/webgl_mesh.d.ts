@@ -10,6 +10,7 @@ export declare class WebGLMesh<T extends Vertex = Vertex> {
     instanceStride: number;
     instanceOffsets: Map<keyof T, number>;
     instanceLength: number;
+    doubleSided: boolean;
     gl: WebGLRenderingContext;
     constructor(gl: WebGLRenderingContext);
     upload(mesh: Mesh<T>): Promise<void>;
@@ -18,4 +19,5 @@ export declare class WebGLMesh<T extends Vertex = Vertex> {
     draw(): void;
     drawLines(): void;
     drawInstances(): void;
+    private setFaceCulling;
 }

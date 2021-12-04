@@ -12,6 +12,7 @@ export declare class Geometry<V extends Vertex> {
     calculateNormals(): void;
 }
 export declare class Mesh<V extends Vertex = Vertex> {
+    doubleSided: boolean;
     geometries: Geometry<V>[];
     constructor(geom?: Geometry<V> | Geometry<V>[] | V[]);
     clone(): Mesh<V>;

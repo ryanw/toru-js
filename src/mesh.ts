@@ -50,6 +50,7 @@ export class Geometry<V extends Vertex> {
 }
 
 export class Mesh<V extends Vertex = Vertex> {
+	doubleSided: boolean = false;
 	geometries: Geometry<V>[] = [];
 
 	constructor(geom?: Geometry<V> | Geometry<V>[] | V[]) {
