@@ -8,6 +8,7 @@ import { Point2, Point3 } from '../geom';
 import { Mesh } from '../mesh';
 import { Actor } from '../actor';
 import { Scene } from '../scene';
+import { SimpleShader } from '../shaders/simple';
 
 describe('WebGLRenderer', () => {
 	type TestVertex = {
@@ -84,8 +85,9 @@ describe('WebGLRenderer', () => {
 		renderer.attach();
 		const gl = renderer.gl as any;
 
+		const shader = new SimpleShader();
 		const scene = new Scene(renderer);
-		scene.addActor(new Actor(new TestMesh()));
+		scene.addActor(new Actor(new TestMesh(), { shader }));
 		scene.addActor(
 			new Actor(
 				new Mesh([
@@ -93,7 +95,8 @@ describe('WebGLRenderer', () => {
 					{ position: [1.1, 2.2, 3.3], foo: [4.4, 5.5], bar: 6.6 },
 					{ position: [1.11, 2.22, 3.33], foo: [4.44, 5.55], bar: 6.66 },
 					{ position: [1.111, 2.222, 3.333], foo: [4.444, 5.555], bar: 6.666 },
-				])
+				]),
+				{ shader }
 			)
 		);
 		await renderer.drawScene(scene);
