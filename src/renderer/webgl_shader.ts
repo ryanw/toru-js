@@ -225,6 +225,10 @@ export class WebGLShader {
 					ext.vertexAttribDivisorANGLE(location, 1);
 					offset += 4 * 4;
 				}
+			} else {
+				gl.enableVertexAttribArray(attribute.location);
+				gl.vertexAttribPointer(attribute.location, attribute.size, attribute.type, false, stride, offset);
+				ext.vertexAttribDivisorANGLE(attribute.location, 1);
 			}
 		}
 	}
