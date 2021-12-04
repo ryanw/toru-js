@@ -65,7 +65,6 @@ export class Scene {
 			uploadActor(child);
 		}
 
-
 		this.actors.push(actor);
 		return this.actors.length - 1;
 	}
@@ -76,7 +75,7 @@ export class Scene {
 			return;
 		}
 
-		const data = Array.from(actor.instances.values()).map((i: ActorInstance) => i.data)
+		const data = Array.from(actor.instances.values()).map((i: ActorInstance) => i.data);
 
 		for (const component of actor.getComponentsOfType(StaticMesh)) {
 			this.renderer.uploadMeshInstances(component.mesh, data);

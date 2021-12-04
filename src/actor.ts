@@ -12,7 +12,7 @@ export interface Instance {
 export type ActorInstance<I extends Instance = Instance> = {
 	pawn: Actor;
 	data: I;
-}
+};
 
 export interface ActorOptions {
 	color?: Color;
@@ -39,8 +39,7 @@ export class Actor<I extends Instance = Instance> {
 			this.children = meshOrOptions;
 		} else if (meshOrOptions instanceof Mesh) {
 			this.components.push(new StaticMesh(meshOrOptions));
-		}
-		else if (typeof meshOrOptions === 'object') {
+		} else if (typeof meshOrOptions === 'object') {
 			options = meshOrOptions;
 		}
 
@@ -48,7 +47,6 @@ export class Actor<I extends Instance = Instance> {
 		material.color = options.color || material.color;
 
 		this.material = material;
-
 
 		if (options.model) {
 			this.model = options.model;
@@ -66,10 +64,7 @@ export class Actor<I extends Instance = Instance> {
 		}
 
 		if (options.components) {
-			this.components = [
-				...this.components,
-				...options.components,
-			];
+			this.components = [...this.components, ...options.components];
 		}
 	}
 

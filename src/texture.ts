@@ -16,10 +16,10 @@ export class Texture {
 	constructor(imageOrURL?: HTMLImageElement | ImageData | string, options?: TextureOptions) {
 		this.putPixels(new ImageData(new Uint8ClampedArray([255, 0, 255, 255]), 1, 1));
 		if (options?.minFilter) {
-			this.minFilter = options.minFilter
+			this.minFilter = options.minFilter;
 		}
 		if (options?.magFilter) {
-			this.magFilter = options.magFilter
+			this.magFilter = options.magFilter;
 		}
 
 		if (imageOrURL) {
@@ -42,7 +42,7 @@ export class Texture {
 			image.addEventListener('load', () => {
 				resolve(new Texture(image, options));
 			});
-			image.addEventListener('error', (e) => {
+			image.addEventListener('error', e => {
 				reject(e);
 			});
 		});

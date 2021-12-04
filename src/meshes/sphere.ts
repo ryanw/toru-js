@@ -77,14 +77,8 @@ export class CubeSphereFace extends Geometry<SphereVertex> {
 		const sub = 1 / (res - 1);
 		for (let y = 0; y < res; y++) {
 			for (let x = 0; x < res; x++) {
-				const p: Point2 = [
-					x * sub,
-					y * sub,
-				];
-				const hp = [
-					(p[0] - 0.5) * 2.0,
-					(p[1] - 0.5) * 2.0,
-				];
+				const p: Point2 = [x * sub, y * sub];
+				const hp = [(p[0] - 0.5) * 2.0, (p[1] - 0.5) * 2.0];
 				let position = up;
 				position = addVector3(position, multiplyVector3([hp[0], hp[0], hp[0]], axisA));
 				position = addVector3(position, multiplyVector3([hp[1], hp[1], hp[1]], axisB));
@@ -117,11 +111,7 @@ export class CubeSphereFace extends Geometry<SphereVertex> {
 }
 
 function sphericalToCartesian(lon: number, lat: number): Point3 {
-	return [
-		Math.cos(lat) * Math.sin(lon),
-		Math.sin(lat),
-		Math.cos(lat) * Math.cos(lon),
-	];
+	return [Math.cos(lat) * Math.sin(lon), Math.sin(lat), Math.cos(lat) * Math.cos(lon)];
 }
 
 function sphericalToUV(lon: number, lat: number): Point2 {

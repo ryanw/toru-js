@@ -21,8 +21,16 @@ export abstract class Renderer {
 		this.wheelMovement[0] = 0;
 		this.wheelMovement[1] = 0;
 	}
-	addEventListener(_type: string, _listener: EventListenerOrEventListenerObject, _options?: AddEventListenerOptions): void {}
-	removeEventListener(_type: string, _listener: EventListenerOrEventListenerObject, _options?: EventListenerOptions): void {}
+	addEventListener(
+		_type: string,
+		_listener: EventListenerOrEventListenerObject,
+		_options?: AddEventListenerOptions
+	): void {}
+	removeEventListener(
+		_type: string,
+		_listener: EventListenerOrEventListenerObject,
+		_options?: EventListenerOptions
+	): void {}
 	get isDragging(): boolean {
 		return false;
 	}

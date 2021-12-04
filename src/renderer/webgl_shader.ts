@@ -32,8 +32,7 @@ export class WebGLShader {
 			location: null,
 		},
 	};
-	instanceAttributes: WebGLAttributeMap = {
-	};
+	instanceAttributes: WebGLAttributeMap = {};
 	uniforms: WebGLUniformMap = {
 		uTime: {
 			type: WebGLRenderingContext.FLOAT,
@@ -271,11 +270,9 @@ export class WebGLShader {
 			case WebGLRenderingContext.FLOAT:
 				if (typeof value === 'number') {
 					gl.uniform1f(uniform.location, value);
-				}
-				else if (Array.isArray(value) && typeof value[0] === 'number') {
+				} else if (Array.isArray(value) && typeof value[0] === 'number') {
 					gl.uniform1fv(uniform.location, value);
-				}
-				else {
+				} else {
 					throw `Uniform '${name}' expected number but got: ${typeof value}`;
 				}
 				break;
@@ -283,11 +280,9 @@ export class WebGLShader {
 			case WebGLRenderingContext.INT:
 				if (typeof value === 'number') {
 					gl.uniform1i(uniform.location, value);
-				}
-				else if (Array.isArray(value) && typeof value[0] === 'number') {
+				} else if (Array.isArray(value) && typeof value[0] === 'number') {
 					gl.uniform1iv(uniform.location, value);
-				}
-				else {
+				} else {
 					throw `Uniform '${name}' expected number but got: ${typeof value}`;
 				}
 				break;
@@ -343,5 +338,4 @@ export class WebGLShader {
 				throw `Unsupported uniform type: ${uniform.type}`;
 		}
 	}
-
 }

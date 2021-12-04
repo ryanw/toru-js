@@ -18,12 +18,12 @@ export class MaterialShader extends Shader {
 		for (let i = 0; i < MAX_LIGHT_COUNT; i++) {
 			const uniformName = `uLights[${i}]`;
 			// @prettier-ignore
-			lightUniforms[`${uniformName}.position`]  = { type: WebGLRenderingContext.FLOAT_VEC3 };
-			lightUniforms[`${uniformName}.ambient`]   = { type: WebGLRenderingContext.FLOAT_VEC3 };
-			lightUniforms[`${uniformName}.diffuse`]   = { type: WebGLRenderingContext.FLOAT_VEC3 };
-			lightUniforms[`${uniformName}.specular`]  = { type: WebGLRenderingContext.FLOAT_VEC3 };
-			lightUniforms[`${uniformName}.constant`]  = { type: WebGLRenderingContext.FLOAT };
-			lightUniforms[`${uniformName}.linear`]    = { type: WebGLRenderingContext.FLOAT };
+			lightUniforms[`${uniformName}.position`] = { type: WebGLRenderingContext.FLOAT_VEC3 };
+			lightUniforms[`${uniformName}.ambient`] = { type: WebGLRenderingContext.FLOAT_VEC3 };
+			lightUniforms[`${uniformName}.diffuse`] = { type: WebGLRenderingContext.FLOAT_VEC3 };
+			lightUniforms[`${uniformName}.specular`] = { type: WebGLRenderingContext.FLOAT_VEC3 };
+			lightUniforms[`${uniformName}.constant`] = { type: WebGLRenderingContext.FLOAT };
+			lightUniforms[`${uniformName}.linear`] = { type: WebGLRenderingContext.FLOAT };
 			lightUniforms[`${uniformName}.quadratic`] = { type: WebGLRenderingContext.FLOAT };
 		}
 
@@ -45,43 +45,43 @@ export class MaterialShader extends Shader {
 			uniforms: {
 				...lightUniforms,
 				// uMaterial
-				"uMaterial.color": {
+				'uMaterial.color': {
 					type: WebGLRenderingContext.FLOAT_VEC4,
 				},
-				"uMaterial.castsShadows": {
+				'uMaterial.castsShadows': {
 					type: WebGLRenderingContext.BOOL,
 				},
-				"uMaterial.receivesShadows": {
+				'uMaterial.receivesShadows': {
 					type: WebGLRenderingContext.BOOL,
 				},
-				"uMaterial.displacementMultiplier": {
+				'uMaterial.displacementMultiplier': {
 					type: WebGLRenderingContext.FLOAT,
 				},
-				"uMaterial.hasTexture": {
+				'uMaterial.hasTexture': {
 					type: WebGLRenderingContext.BOOL,
 				},
-				"uMaterial.hasNormalMap": {
+				'uMaterial.hasNormalMap': {
 					type: WebGLRenderingContext.BOOL,
 				},
-				"uMaterial.hasSpecularMap": {
+				'uMaterial.hasSpecularMap': {
 					type: WebGLRenderingContext.BOOL,
 				},
-				"uMaterial.hasDisplacementMap": {
+				'uMaterial.hasDisplacementMap': {
 					type: WebGLRenderingContext.BOOL,
 				},
-				"uMaterial.texture": {
+				'uMaterial.texture': {
 					type: WebGLRenderingContext.INT,
 				},
-				"uMaterial.normalMap": {
+				'uMaterial.normalMap': {
 					type: WebGLRenderingContext.INT,
 				},
-				"uMaterial.specularMap": {
+				'uMaterial.specularMap': {
 					type: WebGLRenderingContext.INT,
 				},
-				"uMaterial.displacementMap": {
+				'uMaterial.displacementMap': {
 					type: WebGLRenderingContext.INT,
 				},
-				"uMaterial.emissive": {
+				'uMaterial.emissive': {
 					type: WebGLRenderingContext.BOOL,
 				},
 				uTexture: {

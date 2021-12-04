@@ -443,12 +443,13 @@ export function magnitude(v: Vector3): number {
 	return Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
 }
 
-export function raySphereIntersection(center: Point3, radius: number, origin: Point3, direction: Vector3): Point3 | null {
-	const p: Vector3 = [
-		origin[0] - center[0],
-		origin[1] - center[1],
-		origin[2] - center[2],
-	];
+export function raySphereIntersection(
+	center: Point3,
+	radius: number,
+	origin: Point3,
+	direction: Vector3
+): Point3 | null {
+	const p: Vector3 = [origin[0] - center[0], origin[1] - center[1], origin[2] - center[2]];
 
 	const a = Math.pow(magnitude(direction), 2);
 	const b = dot(direction, p);
@@ -469,11 +470,7 @@ export function raySphereIntersection(center: Point3, radius: number, origin: Po
 
 	const t = tmin >= 0 ? tmin : tmax;
 
-	return [
-		origin[0] + t * direction[0],
-		origin[1] + t * direction[1],
-		origin[2] + t * direction[2],
-	];
+	return [origin[0] + t * direction[0], origin[1] + t * direction[1], origin[2] + t * direction[2]];
 }
 
 export function pointToLonLat(point: Point3): LonLat {

@@ -10,5 +10,5 @@ declare module '*.obj' {
 }
 
 interface Constructable<Z = unknown, A extends unknown[] = unknown[]> {
-	new(...args: A): Z
+	new (...args: A): Z;
 }

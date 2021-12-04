@@ -18,7 +18,7 @@ import defaultFragSource from '../shaders/wireframe.frag.glsl';
 
 const DEBUG_ENABLED = !PRODUCTION || window.location.search.indexOf('debug') !== -1;
 
-type ExtWheelEvent = WheelEvent & { wheelDelta: number, axis: number, HORIZONTAL_AXIS: 0x01, VERTICAL_AXIS: 0x02 };
+type ExtWheelEvent = WheelEvent & { wheelDelta: number; axis: number; HORIZONTAL_AXIS: 0x01; VERTICAL_AXIS: 0x02 };
 
 export class WebGLRenderer extends Renderer {
 	canvas: HTMLCanvasElement;
@@ -201,15 +201,13 @@ export class WebGLRenderer extends Renderer {
 
 		if (!e.wheelDelta && e.detail) {
 			// Firefox (DOMMouseScroll)
-			const amount = e.detail * 53 / 3;
+			const amount = (e.detail * 53) / 3;
 			if (e.axis === e.HORIZONTAL_AXIS) {
 				dx = amount;
-			}
-			else {
+			} else {
 				dy = amount;
 			}
-		}
-		else {
+		} else {
 			// Proper wheel event
 			dx = e.deltaX;
 			dy = e.deltaY;
@@ -267,7 +265,6 @@ export class WebGLRenderer extends Renderer {
 			shader.setUniform(uniformName, actor.uniforms[uniformName]);
 		}
 
-
 		// Find mesh to draw
 		const mesh = actor.getComponentsOfType(StaticMesh)[0]?.mesh;
 		if (mesh) {
@@ -294,7 +291,7 @@ export class WebGLRenderer extends Renderer {
 		}
 	}
 
-	drawActor(actor: Actor, projection?: Matrix4, options: { parentModel?: Matrix4, uniforms?: UniformValues } = {}) {
+	drawActor(actor: Actor, projection?: Matrix4, options: { parentModel?: Matrix4; uniforms?: UniformValues } = {}) {
 		if (!actor.visible) return;
 		const { model, material, children } = actor;
 		const { parentModel } = options;
@@ -371,7 +368,6 @@ export class WebGLRenderer extends Renderer {
 			for (const uniformName in actor.uniforms) {
 				shader.setUniform(uniformName, actor.uniforms[uniformName]);
 			}
-
 
 			shader.bind(glMesh);
 			if (actor.hasInstances) {
@@ -460,7 +456,7 @@ export class WebGLRenderer extends Renderer {
 	 * Wait for next animation frame and redraw everything
 	 */
 	async drawScene(scene: Scene, target?: RenderTexture): Promise<number> {
-		return new Promise((resolve) => {
+		return new Promise(resolve => {
 			const draw = () => {
 				const now = performance.now();
 				const dt = (now - this.lastFrameAt) / 1000.0;
@@ -503,7 +499,7 @@ export class WebGLRenderer extends Renderer {
 
 				this.renderTargets.set(texture, target);
 			}
-			
+
 			// Resize to match size of texture
 			this.updateSize(texture.size, texture.size);
 			target.bind();
@@ -527,7 +523,7 @@ export class WebGLRenderer extends Renderer {
 			const shader = actor.shader;
 			if (!shader) continue;
 			if (!shaderMap.get(shader)) {
-				shaderMap.set(shader, [])
+				shaderMap.set(shader, []);
 			}
 			shaderMap.get(shader).push(actor);
 		}
@@ -537,7 +533,6 @@ export class WebGLRenderer extends Renderer {
 				shader.make(this.gl);
 			}
 			shader.use();
-
 
 			// Various global uniforms
 			shader.setUniform('uView', view);
@@ -586,8 +581,8 @@ export class WebGLRenderer extends Renderer {
 		if (!this.parentElement) {
 			return;
 		}
-		const parentWidth = this.parentElement.clientWidth * this.scale | 0;
-		const parentHeight = this.parentElement.clientHeight * this.scale | 0;
+		const parentWidth = (this.parentElement.clientWidth * this.scale) | 0;
+		const parentHeight = (this.parentElement.clientHeight * this.scale) | 0;
 		width = width != null ? width : parentWidth;
 		height = height != null ? height : parentHeight;
 		this.camera.resize(width, height);
